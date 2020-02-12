@@ -1,4 +1,21 @@
+/**
+ * @file
+ * @brief Implementation of Door.
+ */
+
 #include "door.h"
+
+/**
+ * @brief Keeps track of the time since we last requested the door to close.
+ * 
+ * @note This time will be reset to the current time if there occurs an obstruction.
+ */
+static clock_t doorLastCloseRequestTime;
+
+/**
+ * @brief Tracks whether the door is open or not. 
+ */
+static bool doorIsCurrentlyOpen = false;
 
 void doorRequestOpen() {
     doorLastCloseRequestTime = clock();
