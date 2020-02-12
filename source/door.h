@@ -11,11 +11,6 @@
 #include "hardware.h"
 
 /**
- * @brief Specifies how long the door will be open if no obstruction happens.
- */
-static const float DOOR_OPEN_TIME_INTERVAL = 3.0f;
-
-/**
  * @brief Will open the door and close it after a number of seconds specified 
  *        by #DOOR_OPEN_TIME_INTERVAL.
  */
