@@ -41,8 +41,11 @@ HardwareOrder nodeGetDirection(Node* nodePtr);
  *
  * @param[in] newNodePtr Pointer to the order to add to the queue.
  * @param[in] firstNodePtr Pointer to the first order in the queue.
+ * @param[in] currentFloor Current floor.
+ *
+ * @return Returns a pointer to the start of the queue. Returns NULL if @p newNodePtr is an invalid pointer.
  */
-void queueAddNode(Node* newNodePtr, Node* firstNodePtr);
+Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor);
 
 /*	Ubrukelig, firstNode er queue-objektet
 Node* queueGetFirstNode(Node* firstNodePtr);
