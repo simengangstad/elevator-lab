@@ -65,3 +65,17 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 	return newFirstNodePtr;
 }
 
+Node* queuePop(Node* firstNodePtr) {
+	Node* tempNodePtr = firstNodePtr->nextNode;
+	// free firstNodePtr;
+	return tempNodePtr;
+}
+
+void queueClear(Node* firstNodePtr) {
+	// free Nodes allocated?? trenger jo egn ikke.
+	return;
+}
+
+bool queueIsEmpty(Node* firstNodePtr) {
+	return !firstNodePtr;
+}
