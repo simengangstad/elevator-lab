@@ -45,17 +45,20 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 		
 
 		// Traverse queue, delete orders to duplicate floors
-		// Kanskje gå over til do-while her?
 		bool orderOnFloor[4] = {false, false, false, false}; 
 		Node* currentNodePtr = newFirstNodePtr;
 		Node* prevNodePtr = NULL;
-		orderOnFloor[currentNodePtr->floor - 1] = true;
-		while (currentNodePtr->nextNode != NULL) {
-			prevNodePtr = currentNodePtr;
-			currentNodePtr = currentNodePtr->nextNode; // Går fint å bytte med en gang, fordi første node kan ikke være duplikat!
-			if (orderOnFloor[currentNodePtr->floor - 1]) {
-				prevNodePtr->nextNode = currentNodePtr->nextNode;		// Dobbeltsjekk! Føles som feilpunkter her.
+		orderOnFloor[currentNodePtr->floor] = true;
+		while (currentNodePtr != NULL) {
+			if (orderOnFloor[currentNodePtr->floor]) {
+				prevNodePtr->nextNode = currentNodePtr->nextNode;
+				prevNodePtr = prevNodePtr;
 			}
+			else {
+				orderOnFloor[currentNodePtr->floor] = true;
+				prevNodePtr = currentNodePtr;
+			} 
+			currentNodePtr = currentNodePtr->nextNode;
 		}
 		// Delete orderOnFloor?
 	}
