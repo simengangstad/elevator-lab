@@ -18,6 +18,18 @@ typedef struct {
 } Node;
 
 /**
+ * @brief Creates a node object representing an order by allocating space on the heap.
+ *
+ * @param[in] newFloor Floor of the new order.
+ * @param[in] newDirection Direction of the new order.
+ * /warning{The nextNode-parameter of the new node is always NULL.
+ *
+ * @return Pointer to the newly created node.
+ */
+
+Node* nodeCreate(int newFloor, HardwareOrder newDirection);
+
+/**
  * @brief Returns the floor of a given order.
  * 
  * @param[in] nodePtr Pointer to order to get floor of.

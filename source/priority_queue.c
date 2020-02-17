@@ -5,6 +5,17 @@
 
 #include "priority_queue.h"
 
+Node* nodeCreate(int newFloor, HardwareOrder newDirection) {
+	Node* newNodePtr = NULL;
+	newNodePtr = (Node*)malloc(sizeof(Node));
+	
+	newNodePtr->floor = newFloor;
+	newNodePtr->direction = newDirection;
+	newNodePtr->nextNode = NULL;
+
+	return newNodePtr;
+}
+
 int nodeGetFloor(Node* nodePtr) {
 	return nodePtr->floor;
 }
@@ -60,19 +71,24 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 			} 
 			currentNodePtr = currentNodePtr->nextNode;
 		}
-		// Delete orderOnFloor?
+		// Delete orderOnFloor here?
 	}
 	return newFirstNodePtr;
 }
 
 Node* queuePop(Node* firstNodePtr) {
 	Node* tempNodePtr = firstNodePtr->nextNode;
-	// free firstNodePtr;
+	free(firstNodePtr);
 	return tempNodePtr;
 }
 
 void queueClear(Node* firstNodePtr) {
-	// free Nodes allocated?? trenger jo egn ikke.
+	Node* traverseNodePtr = firstNodePtr;
+	while (!traverseNodePtr) {
+		Node* tempNodePtr = traverseNodePtr;
+		traverseNodePtr = traverseNodePtr->nextNode;
+		free(tempNodePtr);
+	}
 	return;
 }
 
