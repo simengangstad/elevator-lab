@@ -14,7 +14,7 @@
  * @brief Will open the door and close it after a number of seconds specified 
  *        by #DOOR_OPEN_TIME_INTERVAL.
  */
-void doorRequestOpen();
+void doorRequestOpenAndAutoclose();
 
 /**
  * @brief Updates the timer and checks whether we should close the door (which happens 

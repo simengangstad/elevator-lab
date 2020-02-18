@@ -15,35 +15,35 @@ static const float DOOR_OPEN_TIME_INTERVAL = 3.0f;
  * 
  * @note This time will be reset to the current time if there occurs an obstruction.
  */
-static clock_t doorLastCloseRequestTime;
+static clock_t globalDoorLastCloseRequestTime;
 
 /**
  * @brief Tracks whether the door is open or not. 
  */
-static bool doorIsCurrentlyOpen = false;
+static bool globalDoorIsCurrentlyOpen = false;
 
-void doorRequestOpen() {
-    doorLastCloseRequestTime = clock();
+void doorRequestOpenAndAutoclose() {
+    globalDdoorLastCloseRequestTime = clock();
     hardware_command_door_open(1);
-    doorIsCurrentlyOpen = true;
+    globalDoorIsCurrentlyOpen = true;
 }
 
 void doorUpdate() {
 
     if (doorIsOpen()) {
         if (hardware_read_obstruction_signal()) {
-            doorLastCloseRequestTime = clock();
+            globalDoorLastCloseRequestTime = clock();
         }
 
-        const float interval = (float)(clock() - doorLastCloseRequestTime) / CLOCKS_PER_SEC;
+        const float interval = (float)(clock() - globalDoorLastCloseRequestTime) / CLOCKS_PER_SEC;
 
         if (interval >= DOOR_OPEN_TIME_INTERVAL) {
             hardware_command_door_open(0);
-            doorIsCurrentlyOpen = false;
+            globalDoorIsCurrentlyOpen = false;
         }
     }
 }
 
 bool doorIsOpen() {
-    return doorIsCurrentlyOpen;
+    return globalDoorIsCurrentlyOpen;
 }
