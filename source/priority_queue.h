@@ -22,12 +22,22 @@ typedef struct {
  *
  * @param[in] newFloor Floor of the new order.
  * @param[in] newDirection Direction of the new order.
- * /warning{The nextNode-parameter of the new node is always NULL.
+ * /warning{The nextNode-parameter of the new node is always NULL.}
  *
  * @return Pointer to the newly created node.
  */
 
 Node* nodeCreate(int newFloor, HardwareOrder newDirection);
+
+/**
+ * @brief Deletes the single and frees the allocated space in memory.
+ *
+ * /warning{Does not take account of linked nodes, beware of dangling pointers.}
+ *
+ * @param[in] nodePtr Pointer to node to delete.
+ */
+
+void nodeDelete(Node* nodePtr);
 
 /**
  * @brief Returns the floor of a given order.
@@ -89,5 +99,11 @@ void queueClear(Node* firstNodePtr);
  */
 bool queueIsEmpty(Node* firstNodePtr);
 
+/**
+ * @brief Prints the queue to terminal, including the order floors and directions.
+ *
+ * @param[in] firstNodePtr Pointer to first node in queue.
+ */
+void queuePrint(Node* firstNodePtr);
 
 #endif

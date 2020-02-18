@@ -16,6 +16,12 @@ Node* nodeCreate(int newFloor, HardwareOrder newDirection) {
 	return newNodePtr;
 }
 
+
+void nodeDelete(Node* nodePtr) {
+	free(nodePtr);
+	return;
+}
+
 int nodeGetFloor(Node* nodePtr) {
 	return nodePtr->floor;
 }
@@ -94,4 +100,15 @@ void queueClear(Node* firstNodePtr) {
 
 bool queueIsEmpty(Node* firstNodePtr) {
 	return !firstNodePtr;
+}
+
+void queuePrint(Node* firstNodePtr) {
+	Node* tempNodePtr = firstNodePtr;
+	int n = 1;
+	while(!tempNodePtr) {
+		printf("%i", n, ". order\n");
+		printf("\t Floor: %i", tempNodePtr->floor, "\n");
+		printf("\t Direction: %i", tempNodePtr->direction, "\n");
+		n++;
+	}
 }
