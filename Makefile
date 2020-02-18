@@ -1,9 +1,16 @@
 SOURCES := main.c door.c
 
 SOURCE_DIR := source
+TEST_DIR := source/tests
 BUILD_DIR := build
 
 OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SOURCES))
+
+
+TEST_SOURCES := main_tests.c door.c door_tests.c 
+
+TEST_OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
+
 
 DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 DRIVER_SOURCE := hardware.c io.c
@@ -17,8 +24,15 @@ LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
 elevator : $(OBJ) | $(DRIVER_ARCHIVE)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
+tests: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+
 $(BUILD_DIR) :
 	mkdir -p $@/driver
+
+$(BUILD_DIR)/%.o : $(TEST_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o : $(SOURCE_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
