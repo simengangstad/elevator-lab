@@ -23,7 +23,7 @@ static clock_t globalDoorLastCloseRequestTime;
 static bool globalDoorIsCurrentlyOpen = false;
 
 void doorRequestOpenAndAutoclose() {
-    globalDdoorLastCloseRequestTime = clock();
+    globalDoorLastCloseRequestTime = clock();
     hardware_command_door_open(1);
     globalDoorIsCurrentlyOpen = true;
 }
