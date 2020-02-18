@@ -64,8 +64,8 @@ void fsmStateEnter(State currentState);
 void fsmStateExit(State currentState);
 
 /**
- * @brief ???
- *
+ * @brief Will execute the update function defined for the @p currentState and update
+ * 		  internal state.
  */
 void fsmStateUpdate(State currentState);
 
