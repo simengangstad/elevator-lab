@@ -1,12 +1,12 @@
 #include "../priority_queue.h"
 
 // TNODE-1
-Node* testMakeNode() {
+bool testMakeNode() {
 	int testFloor = 3;
 	HardwareOrder testDirection = HARDWARE_ORDER_UP;
-	return nodeCreate(testFloor, testDirection);
-}
-
+	Node* testNode = nodeCreate(testFloor, testDirection);
+	return (testNode->floor == testFloor && testNode->direction == testDirection && !testNode->nextNode);
+		
 // TNODE-2
 Node* testLinkNodes() {
 	Node* testNodeFirst = nodeCreate(2, HARDWARE_ORDER_DOWN);
