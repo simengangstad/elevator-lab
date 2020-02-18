@@ -5,52 +5,102 @@ bool testMakeNode() {
 	int testFloor = 3;
 	HardwareOrder testDirection = HARDWARE_ORDER_UP;
 	Node* testNode = nodeCreate(testFloor, testDirection);
-	return (testNode->floor == testFloor && testNode->direction == testDirection && !testNode->nextNode);
-		
+
+	bool result = (testNode->floor == testFloor && testNode->direction == testDirection && !testNode->nextNode);
+	free(testNode);
+	return result;
+}
+
+void validateMakeNode() {
+	assert(testMakeNode);
+	return;
+}
+
 // TNODE-2
-Node* testLinkNodes() {
+bool testLinkNodes() {
 	Node* testNodeFirst = nodeCreate(2, HARDWARE_ORDER_DOWN);
 	Node* testNodeSecond = nodeCreate(3, HARDWARE_ORDER_INSIDE);
 	testNodeFirst->nextNode = testNodeSecond;
-	return testNodeFirst;
+	bool result = testNodeFirst->nextNode == testNodeSecond;
+	free(testNodeFirst);
+	free(testNodeSecond);
+	return result;
+}
+
+void validateLinkNodes() {
+	assert(testLinkNodes());
+	return;
 }
 
 // TNODE-3
-Node* testGetFunctions() {
-	Node* testNode = nodeCreate(1, HARDWARE_ORDER_UP);
-	return testNode;
+bool testGetFunctions() {
+	int testFloor = 1;
+	HardwareOrder testDirection = HARDWARE_ORDER_UP;
+	Node* testNode = nodeCreate(testFloor, testDirection);
+	int testNodeFloor = nodeGetFloor(testNode);
+	HardwareOrder testNodeDirection = nodeGetDirection(testNode);
+	bool result = testFloor == testNodeFloor && testDirection == testNodeDirection;
+	free(testNode);
+	return result;
 }
 
-int main() {
-	{
-		// TNODE-1
-		Node* testNode = testMakeNode();
-		assert(testNode->floor == 3);
-		assert(testNode->direction == HARDWARE_ORDER_UP);
-		assert(!testNode->nextNode);
-		free(testNode);
-	}
-	
-	{
-		// TNODE-2
-		Node* testNode = testLinkNodes();
-		assert(testNode->nextNode);
-		assert(!testNode->nextNode->nextNode);
-		free(testNode->nextNode);
-		free(testNode);
-	}
-	
-	{
-		// TNODE-3
-		Node* testNode = testGetFunctions();
-		assert(testNode->floor == nodeGetFloor(testNode));
-		assert(testNode->direction == nodeGetDirection(testNode));
-	}
-	
-	{
-		// TQUEUE-1
-		
-	}
-	
-	return 0;
+void validateGetFunctions() {
+	assert(testGetFunctions);
+	return;
+}
+
+// TQUEUE-1
+bool testQueueCreationAndAdd() {
+	int currentFloor = 1;
+	printf("Tests adding-algoritm based on cases\n");
+	printf("Case 1: new compatible order between current floor and goal\n");
+	printf("At floor %i", currentFloor, " , new order going up from floor 3.\n");
+	Node* firstNode1 = nodeCreate(3, HARDWARE_ORDER_UP);
+	queuePrint(firstNode1);
+	printf("New order from inside to second floor\n");
+	Node* secondNode1 = nodeCreate(2, HARDWARE_ORDER_INSIDE);
+	firstNode1 = queueAddNode(secondNode1, firstNode1, currentFloor);
+	queuePrint(firstNode1);
+	print("Test successful if new order is placed on top of existing order\n");
+	queueClear(firstNode1);
+
+
+	printf("Case 2: new compatible order not between current floor and goal\n");
+	printf("At floor %i", currentFloor, " , new order going up from floor 3.\n");
+	Node* firstNode2 = nodeCreate(3, HARDWARE_ORDER_UP);
+	queuePrint(firstNode2);
+	printf("New order from inside to fourth floor\n");
+	Node* secondNode2 = nodeCreate(4, HARDWARE_ORDER_INSIDE);
+	firstNode2 = queueAddNode(secondNode2, firstNode2, currentFloor);
+	queuePrint(firstNode2);
+	print("Test successful if new order is placed below existing order\n");
+	queueClear(firstNode2);
+
+
+	printf("Case 3: new incompatible order between current floor and goal\n");
+	printf("At floor %i", currentFloor, " , new order going up from floor 3.\n");
+	Node* firstNode3 = nodeCreate(3, HARDWARE_ORDER_UP);
+	queuePrint(firstNode3);
+	printf("New order going down from second floor\n");
+	Node* secondNode3 = nodeCreate(2, HARDWARE_ORDER_DOWN);
+	firstNode3 = queueAddNode(secondNode3, firstNode3, currentFloor);
+	queuePrint(firstNode3);
+	print("Test successful if new order is placed below existing order\n");
+	queueClear(firstNode3);
+
+
+	printf("Case 4: deletion of duplicate orders of lower priority\n");
+	printf("At floor %i", currentFloor, " , new order going up from floor 3.\n");
+	Node* firstNode4 = nodeCreate(3, HARDWARE_ORDER_UP);
+	queuePrint(firstNode4);
+	printf("New order going down from second floor\n");
+	Node* secondNode4 = nodeCreate(2, HARDWARE_ORDER_DOWN);
+	firstNode4 = queueAddNode(secondNode4, firstNode4, currentFloor);
+	queuePrint(firstNode4);
+	print("New order going up from second floor\n");
+	Node* thirdNode4 = nodeCreate(2, HARDWARE_ORDER_UP);
+	firstNode4 = queueAddNode(thirdNode4, firstNode4, currentFloor);
+	queuePrint(firstNode4);
+	printf("Test successful if duplicate order is deleted correctly");
+	queueClear(firstNode4);
 }
