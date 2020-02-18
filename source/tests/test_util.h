@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Convenience functions for testing.
+ */
+
 #ifndef TEST_UTIL_H
 #define TEST_UTIL_H
 

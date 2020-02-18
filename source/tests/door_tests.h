@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Tests the door module.
+ */
+
 #ifndef DOOR_TESTS_H
 #define DOOR_TESTS_H
 

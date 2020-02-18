@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Entry testing for module testing.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>

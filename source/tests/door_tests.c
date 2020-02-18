@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Implementation of tests for the door module.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
