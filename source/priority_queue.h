@@ -65,7 +65,7 @@ HardwareOrder nodeGetDirection(Node* nodePtr);
  * @param[in] firstNodePtr Pointer to the first order in the queue.
  * @param[in] currentFloor Current floor.
  *
- * @return Returns a pointer to the start of the queue. Returns NULL if @p newNodePtr is an invalid pointer.
+ * @return Returns a pointer to the start of the queue. Returns @p firstNodePtr if @p newNodePtr is NULL.
  */
 Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor);
 
@@ -77,10 +77,11 @@ Node* queueGetFirstNode(Node* firstNodePtr);
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
  *
  * @param[in] firstNodePtr Pointer to the first order in the queue.
+ * @param[in] currentFloor Current floor of the elevator.
  *
  * @return Pointer to the second order in the queue.
  */
-Node* queuePop(Node* firstNodePtr);
+Node* queuePop(Node* firstNodePtr, int currentFloor);
 
 
 /**

@@ -33,7 +33,7 @@ HardwareOrder nodeGetDirection(Node* nodePtr) {
 Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 	// Nødvendig?
 	if (!newNodePtr) {
-		return NULL;
+		return firstNodePtr;
 	}
 
 
@@ -82,10 +82,21 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 	return newFirstNodePtr;
 }
 
-Node* queuePop(Node* firstNodePtr) {
-	Node* tempNodePtr = firstNodePtr->nextNode;
+Node* queuePop(Node* firstNodePtr, int currentFloor) {
+	Node* newFirstNodePtr = firstNodePtr->nextNode;
 	free(firstNodePtr);
-	return tempNodePtr;
+
+	// Seperate current goal from older orders, reprioritize by going through older orders and adding them to queue again.
+	Node* remainingNodesPtr = newFirstNodePtr->nextNode;
+	newFirstNodePtr->nextNode = NULL;
+	while(!remainingNodesPtr) {
+		Node* tempNodePtr = remainingNodesPtr;
+		tempNodePtr->nextNode = NULL;
+		newFirstNodePtr = queueAddNode(tempNodePtr, newFirstNodePtr, currentFloor);
+		remainingNodesPtr = remainingNodesPtr->next;
+	}
+
+	return newFirstNodePtr;
 }
 
 void queueClear(Node* firstNodePtr) {
