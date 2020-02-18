@@ -4,6 +4,10 @@
  *
  */
 
+#ifndef FSM_H
+#define FSM_H
+#include "hardware.h"
+
 /**
  * @brief Enum of the possible defined states
  */
@@ -64,3 +68,5 @@ void fsmStateExit(State currentState);
  *
  */
 void fsmStateUpdate(State currentState);
+
+#endif
