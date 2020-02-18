@@ -24,6 +24,6 @@ int main(){
     }
 
     signal(SIGINT, sigint_handler);
-
+	
 	doorTestsValidate();
 }
