@@ -111,4 +111,6 @@ void queuePrint(Node* firstNodePtr) {
 		printf("\t Direction: %i", tempNodePtr->direction, "\n");
 		n++;
 	}
+	printf("End of queue\n");
+	return;
 }
