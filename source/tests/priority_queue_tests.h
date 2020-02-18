@@ -7,7 +7,7 @@
 #define PRIORITY_QUEUE_TESTS_H
 
 /**
- * @brief Tests all the 
+ * @brief Validates the result of all the tests of PriorityQueue 
  *
  */
 void validatePriorityQueueTests();
