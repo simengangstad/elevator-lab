@@ -110,8 +110,8 @@ void testQueueHelpFunctions() {
 	int currentFloor = 1;
 	printf("Help functions\n");
 	Node* firstNode = nodeCreate(3, HARDWARE_ORDER_UP);
-	firstNode = queueAddNode(nodeCreate(2, HARDWARE_ORDER_INSIDE, firstNode, currentFloor));
-	firstNode = queueAddNode(nodeCreate(4, HARDWARE_ORDER_DOWN, firstNode, currentFloor));
+	firstNode = queueAddNode(nodeCreate(2, HARDWARE_ORDER_INSIDE), firstNode, currentFloor);
+	firstNode = queueAddNode(nodeCreate(4, HARDWARE_ORDER_DOWN), firstNode, currentFloor);
 	printf("Current queue:\n");
 	queuePrint(firstNode);
 	printf("Pop first node\n");
@@ -124,8 +124,8 @@ void testQueueHelpFunctions() {
 
 	currentFloor = 2;
 	Node* firstNode2 = nodeCreate(2, HARDWARE_ORDER_UP);
-	firstNode2 = queueAddNode(nodeCreate(4, HARDWARE_ORDER_UP, firstNode2, currentFloor));
-	firstNode2 = queueAddNode(nodeCreate(3, HARDWARE_ORDER_INSIDE, firstNode2, currentFloor));
+	firstNode2 = queueAddNode(nodeCreate(4, HARDWARE_ORDER_UP), firstNode2, currentFloor);
+	firstNode2 = queueAddNode(nodeCreate(3, HARDWARE_ORDER_INSIDE), firstNode2, currentFloor);
 	printf("Current queue:\n");
 	queuePrint(firstNode2);
 

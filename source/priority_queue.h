@@ -7,12 +7,16 @@
 #define PRIORITY_QUEUE_H
 
 #include "hardware.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
 
 /**
  * @brief Structure to represent an order in the queue.
  */
 typedef struct {
-	Node* nextNode;
+	struct Node* nextNode;
 	int floor;
 	HardwareOrder direction;
 } Node;
