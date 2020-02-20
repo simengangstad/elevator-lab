@@ -53,9 +53,9 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 			newNodePtr->nextNode = NULL;
 			newFirstNodePtr = firstNodePtr;
 
-			currentNodePtr = newFirstNodePtr;
+			Node* currentNodePtr = newFirstNodePtr;
 			while (currentNodePtr->nextNode != NULL) {
-				currentNodePtr = currentNodePtr->nextNode
+				currentNodePtr = currentNodePtr->nextNode;
 			}
 			currentNodePtr->nextNode = newNodePtr;
 		}
@@ -93,7 +93,7 @@ Node* queuePop(Node* firstNodePtr, int currentFloor) {
 		Node* tempNodePtr = remainingNodesPtr;
 		tempNodePtr->nextNode = NULL;
 		newFirstNodePtr = queueAddNode(tempNodePtr, newFirstNodePtr, currentFloor);
-		remainingNodesPtr = remainingNodesPtr->next;
+		remainingNodesPtr = remainingNodesPtr->nextNode;
 	}
 
 	return newFirstNodePtr;
