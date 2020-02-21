@@ -15,7 +15,7 @@ else
 endif
 
 CC := gcc
-CFLAGS := -O0 -g3 -Wall -Werror -std=c11 -I$(SOURCE_DIR)
+CFLAGS := -O0 -g3 -Wall -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
 
 ifeq ($(SIM), true)
   LDFLAGS := -L$(BUILD_DIR) -ldriver 
@@ -26,13 +26,13 @@ endif
 .DEFAULT_GOAL := elevator
 
 elevator : $(OBJ) | $(DRIVER_ARCHIVE)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) -Werror $^ -o $@ $(LDFLAGS)
 
 $(BUILD_DIR) :
 	mkdir -p $@/driver
 
 $(BUILD_DIR)/%.o : $(SOURCE_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -Werror -c $< -o $@
 
 $(BUILD_DIR)/driver/%.o : $(SOURCE_DIR)/driver/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
