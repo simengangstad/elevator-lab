@@ -118,9 +118,12 @@ void queuePrint(Node* firstNodePtr) {
 	Node* tempNodePtr = firstNodePtr;
 	int n = 1;
 	while(!tempNodePtr) {
-		printf("%i", n, ". order\n");
-		printf("\t Floor: %i", tempNodePtr->floor, "\n");
-		printf("\t Direction: %i", tempNodePtr->direction, "\n");
+		printf("%i", n);
+		printf(". order\n");
+		printf("\t Floor: %i", tempNodePtr->floor);
+		printf("\n");
+		printf("\t Direction: %i", (int) tempNodePtr->direction);
+		printf("\n");
 		n++;
 	}
 	printf("End of queue\n");
