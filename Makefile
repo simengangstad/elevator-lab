@@ -16,7 +16,12 @@ endif
 
 CC := gcc
 CFLAGS := -O0 -g3 -Wall -Werror -std=c11 -I$(SOURCE_DIR)
-LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
+
+ifeq ($(SIM), true)
+  LDFLAGS := -L$(BUILD_DIR) -ldriver 
+else
+  LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
+endif
 
 .DEFAULT_GOAL := elevator
 
