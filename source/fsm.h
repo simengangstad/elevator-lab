@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief Finite state machine controlling system.
- *
  */
 
 #ifndef FSM_H
@@ -16,7 +15,8 @@ typedef enum {
 	Idle,
 	Move,
 	DoorOpen,
-	Stop
+	Stop,
+	Undefined
 } State; 
 
 
