@@ -4,11 +4,8 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
 #include <time.h>
 #include <assert.h>
-#include <unistd.h>
 
 #include "hardware.h"
 #include "../door.h"
@@ -25,18 +22,18 @@
 static bool doorTestsCheckKeepsOpenWhileObstruction() {
 
 	const float durationToCheck = 5.0f;
-	const float sleepDuration = 0.5f;
 	
 	printf("Enable obstruction now please. Will open door and try to close for %f seconds. Press enter to continue...\n", durationToCheck);
 	testUtilWaitUntilEnterKeyIsPressed();
+	fflush(stdout);
 
 	doorRequestOpenAndAutoclose();
 
-	const clock_t startTime = clock();
+	const time_t startTime = time(NULL);
 
 	bool doorOpen = false;
 
-	while ((float) (clock() - startTime) >= durationToCheck) {
+	while (time(NULL) - startTime <= durationToCheck) {
 
 		doorUpdate();
 
@@ -46,7 +43,7 @@ static bool doorTestsCheckKeepsOpenWhileObstruction() {
 			break;
 		}
 
-		sleep(sleepDuration);
+		sleep(1);
 	}
 
 	return doorOpen;
@@ -62,23 +59,26 @@ static bool doorTestsCheckKeepsOpenWhileObstruction() {
  */
 static bool doorTestsCheckClosesWhenNoObstruction() {
 
+	printf("Closing door...\n");
+	hardware_command_door_open(0);
+
 	const float durationToCheck = 3.5f;
-	const float sleepDuration = 0.1f;
 	
 	printf("Disable obstruction now please. Will open door and try to autoclose. Press enter to continue...\n");
 	testUtilWaitUntilEnterKeyIsPressed();
+	fflush(stdout);
 
 	doorRequestOpenAndAutoclose();
 
-	const clock_t startTime = clock();
+	const time_t startTime = time(NULL);
 
-	while ((float) (clock() - startTime) >= durationToCheck) {
+	while (time(NULL) - startTime <= durationToCheck) {
 
 		doorUpdate();
-		sleep(sleepDuration);
+		sleep(1);
 	}
 
-	return doorIsOpen();
+	return !doorIsOpen();
 }
 
 
@@ -89,15 +89,16 @@ static bool doorTestsCheckClosesWhenNoObstruction() {
  */
 static void doorTestsCheckTimerReset() {
 
-	const float sleepDuration = 0.1f;
-	
+	printf("Closing door...\n");
+	hardware_command_door_open(0);
+
 	printf("Enable obstruction now please. Will open door and try to autoclose. Disable obstruction signal when ready and count the seconds it takes for the door to close. Press enter to continue...\n");
 	testUtilWaitUntilEnterKeyIsPressed();
 	doorRequestOpenAndAutoclose();
 
 	while (doorIsOpen()) {
 		doorUpdate();
-		sleep(sleepDuration);
+		sleep(1);
 	}
 }
 
@@ -112,7 +113,6 @@ static void doorTestsCheckTimerReset() {
 static bool doorTestsCheckDoorIsOpenFunction() {
 
 	const float durationToCheck = 3.5f;
-	const float sleepDuration = 0.1f;
 	
 	printf("Disable obstruction please. Will open door and try to autoclose. Press enter to continue...\n");
 	testUtilWaitUntilEnterKeyIsPressed();
@@ -120,12 +120,12 @@ static bool doorTestsCheckDoorIsOpenFunction() {
 	doorRequestOpenAndAutoclose();
 	const bool doorOpened = doorIsOpen();
 
-	const clock_t startTime = clock();
+	const time_t startTime = time(NULL);
 
-	while ((float) (clock() - startTime) >= durationToCheck) {
+	while (time(NULL) - startTime <= durationToCheck) {
 
 		doorUpdate();
-		sleep(sleepDuration);
+		sleep(1);
 	}
 
 	const bool doorClosed = !doorIsOpen();
@@ -136,21 +136,38 @@ static bool doorTestsCheckDoorIsOpenFunction() {
 
 void doorTestsValidate() {
 
-	printf("Starting door tests.\n\n");
+
+	printf("=========== Starting door tests ===========\n\n");
+	printf("Moving elevator to floor...\n\n");
+
+    while(1) {
+
+        if(hardware_read_floor_sensor(0) || 
+		   hardware_read_floor_sensor(1) ||
+		   hardware_read_floor_sensor(2) ||
+		   hardware_read_floor_sensor(3)) {
+			hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+			break;
+        }
+		else {
+            hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
+		}
+   }
 
 	printf("1. Check if door keeps open when there is an obstruction (TDOOR-1)\n");
 	assert(doorTestsCheckKeepsOpenWhileObstruction());
-	printf("1. Passed\n");
+	printf("1. Passed\n\n");
 
 	printf("2. Check if door closes when there is no obstruction (TDOOR-2, TDOOR-3, TDOOR-4, TDOOR-6)\n");
 	assert(doorTestsCheckClosesWhenNoObstruction());
-	printf("2. Passed\n");
+	printf("2. Passed\n\n");
 
 	printf("3. Check if the timer resets. Validate visually (TDOOR-5)\n");
 	doorTestsCheckTimerReset();
-	printf("3. End\n");
+	printf("3. End\n\n");
 
-	printf("4. Check if the function for whether the door is open returns the right value (TDOOR-7).\n");
+	printf("4. Will check if the function for whether the door is open returns the right value for one call to open and close door (TDOOR-7).\n");
 	assert(doorTestsCheckDoorIsOpenFunction());
-	printf("4. Passed\n");
+	printf("4. Passed\n\n");
+	printf("=========== Door tests passed ===========\n\n");
 }
