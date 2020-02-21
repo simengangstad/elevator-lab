@@ -37,8 +37,10 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 	}
 
 
-	// Algorithm for adding node to queue
 	Node* newFirstNodePtr = NULL;
+
+
+	// Algorithm for adding node to queue
 	if (!firstNodePtr) {		// If the queue is empty:
 		newNodePtr->nextNode = NULL;
 		newFirstNodePtr = newNodePtr;
@@ -62,10 +64,9 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 		
 
 		// Traverse queue, delete orders to duplicate floors
-		bool orderOnFloor[4] = {false, false, false, false}; 
+		bool orderOnFloor[4] = {false, false, false, false}; 		// Lite dynamisk, pls fix
 		Node* currentNodePtr = newFirstNodePtr;
-		Node* prevNodePtr = NULL;
-		orderOnFloor[currentNodePtr->floor] = true;
+		Node* prevNodePtr = nodeCreate(0, HARDWARE_ORDER_INSIDE);		// LnodeCreate(0, HARDWARE_ORDER_INSIDE);		// Lite dynamisk dette her ass, men for å unngå sigfaultt
 		while (currentNodePtr != NULL) {
 			if (orderOnFloor[currentNodePtr->floor]) {
 				prevNodePtr->nextNode = currentNodePtr->nextNode;
@@ -77,7 +78,7 @@ Node* queueAddNode(Node* newNodePtr, Node* firstNodePtr, int currentFloor) {
 			} 
 			currentNodePtr = currentNodePtr->nextNode;
 		}
-		// Delete orderOnFloor here?
+		free(prevNodePtr);
 	}
 	return newFirstNodePtr;
 }
