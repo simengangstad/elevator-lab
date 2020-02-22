@@ -22,11 +22,11 @@ void nodeDelete(Node* nodePtr) {
 	return;
 }
 
-int nodeGetFloor(Node* nodePtr) {
+int nodeGetFloor(const Node* nodePtr) {
 	return nodePtr->floor;
 }
 
-HardwareOrder nodeGetDirection(Node* nodePtr) {
+HardwareOrder nodeGetDirection(const Node* nodePtr) {
 	return nodePtr->direction;
 }
 
@@ -110,7 +110,7 @@ void queueClear(Node* firstNodePtr) {
 	return;
 }
 
-bool queueIsEmpty(Node* firstNodePtr) {
+bool queueIsEmpty(const Node* firstNodePtr) {
 	return !firstNodePtr;
 }
 

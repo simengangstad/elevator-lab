@@ -50,7 +50,7 @@ void nodeDelete(Node* nodePtr);
  *
  * @return Floor of the order.
  */
-int nodeGetFloor(Node* nodePtr);
+int nodeGetFloor(const Node* nodePtr);
 
 /**
  * @brief Returns the direction of a given order.
@@ -59,7 +59,7 @@ int nodeGetFloor(Node* nodePtr);
  *
  * @return Direction of the order of the type HardwareOrder. A return of HARDWARE_ORDER_INSIDE means the order is directionless (meaning it is called from inside the elevator.
  */
-HardwareOrder nodeGetDirection(Node* nodePtr);
+HardwareOrder nodeGetDirection(const Node* nodePtr);
 
 
 /**
@@ -102,7 +102,7 @@ void queueClear(Node* firstNodePtr);
  *
  * @return True if the queue is empty.
  */
-bool queueIsEmpty(Node* firstNodePtr);
+bool queueIsEmpty(const Node* firstNodePtr);
 
 /**
  * @brief Prints the queue to terminal, including the order floors and directions.
