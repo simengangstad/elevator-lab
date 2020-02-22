@@ -2,3 +2,5 @@ html/
 latex/
 build/
 .clang
+elevator
+tests
