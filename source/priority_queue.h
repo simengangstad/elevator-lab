@@ -15,7 +15,7 @@
 /**
  * @brief Structure to represent an order in the queue.
  */
-typedef struct {
+typedef struct Node {
 	struct Node* nextNode;
 	int floor;
 	HardwareOrder direction;
