@@ -2,9 +2,6 @@
  * @brief Implementation of the Finite State Machine
  */
 
-#include <stdbool.h>
-#include <stdio.h>
-
 #include "fsm.h"
 
 int main() {
@@ -15,34 +12,43 @@ int main() {
         exit(1);
     }
 
+
+	// Transition to the start up state so we enter it properly before the main loop, this will just ensure
+	// that the code associated with the start up state is executed
+	// fsmTransition(Undefined, Startup);
+
 	State currentState = Startup;
+	Node* priorityQueue = NULL;
 
-	// Transition to the start up state so we enter it properly before the main loop
-	fsmTransition(Undefined, currentState);
-
+	bool* shouldClearOrders = malloc(sizeof(bool));
+	
     while(1) {
-		State previousState = currentState;
-		State nextState = fsmDecideNextState(currentState);	
+		State nextState = fsmDecideNextState(currentState, priorityQueue);	
 
-		if (nextState != previousState) {
+		if (nextState != currentState) {
 			fsmTransition(currentState, nextState);
+			currentState = nextState;
+			*shouldClearOrders = false;
 		}
 
-		for (unsigned int i = 0; i < HARDWARE_NUMBER_OF_FLOORS; i++) {
+		fsmStateUpdate(currentState, shouldClearOrders);
 
-			if (hardware_read_order(i, HARDWARE_ORDER_UP)) {
-				
+		if (!shouldClearOrders) {
+			for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+				for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
+
+					if (hardware_read_order(floor, orderType)) {
+						// queueAddNode(nodeCreate(floor, orderType), priority_queue, );
+					}
+				}
 			}
-
-			if (hardware_read_order(i, HARDWARE_ORDER_INSIDE)) {
-
-			}
-
-			if (hardware_read_order(i, HARDWARE_ORDER_DOWN)) {
-
-			}
+		}
+		else {
+			queueClear(priorityQueue);
 		}
     }
+
+	free(shouldClearOrders);
 
 	return 0;
 }
@@ -52,8 +58,8 @@ void fsmUpdateLights() {
 	return;
 }
 
-State fsmDecideNextState(State currentState) {
-	State nextState;
+State fsmDecideNextState(State currentState, const Node* priorityQueue) {
+	State nextState = currentState;
 
 	switch (currentState) {
 		case Startup:
@@ -67,6 +73,11 @@ State fsmDecideNextState(State currentState) {
 		break;
 
 		case Idle:
+
+			if (!hardware_read_stop_signal() && !priorityQueue) {
+				nextState = Move;
+			}
+
 
 		break;
 
@@ -120,16 +131,17 @@ void fsmTransition(State currentState, State nextState) {
 	// Perform enter for next state	
 	switch (nextState) {
 		case Startup:
-			bool isAtFloor = true;
+			{
+				bool isAtFloor = true;
 
-			for (unsigned int i = 0; i < HARDWARE_NUMBER_OF_FLOORS; i++) {
-				isAtFloor = hardware_read_floor_sensor(i);
+				for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+					isAtFloor = hardware_read_floor_sensor(floor);
+				}
+
+				if (!isAtFloor) {
+					hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
+				}	
 			}
-
-			if (!isAtFloor) {
-				hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
-			}	
-
 		break;
 
 		case Idle:
@@ -153,11 +165,11 @@ void fsmTransition(State currentState, State nextState) {
 	}
 }
 
-void fsmStateUpdate(State currentState) {
+void fsmStateUpdate(State currentState, bool* shouldClearOrders) {
 
 	switch (currentState) {
 		case Startup:
-			// Ignore enqueuements
+			*shouldClearOrders = true;
 		break;
 
 		case Idle:
