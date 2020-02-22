@@ -1,5 +1,5 @@
 SIM := true
-SOURCES := main.c
+SOURCES := fsm.c priority_queue.c
 
 SOURCE_DIR := source
 BUILD_DIR := build
