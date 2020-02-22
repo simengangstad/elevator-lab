@@ -24,10 +24,10 @@ int main() {
 	int currentFloor = -1;
 
     while(1) {
-		State nextState = fsmDecideNextState(currentState, priorityQueue);	
+		State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);	
 
 		if (nextState != currentState) {
-			fsmTransition(currentState, nextState);
+			fsmTransition(currentState, nextState, priorityQueue);
 			currentState = nextState;
 			*shouldClearOrders = false;
 		}
@@ -40,6 +40,7 @@ int main() {
 		}
 
 		fsmStateUpdate(currentState, shouldClearOrders);
+		// doorUpdate();
 
 		if (!shouldClearOrders && currentFloor != -1) {
 			for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
@@ -47,6 +48,7 @@ int main() {
 
 					if (hardware_read_order(floor, orderType)) {
 						queueAddNode(nodeCreate(floor, orderType), priorityQueue, currentFloor);
+						hardware_command_order_light(floor, orderType, true);
 					}
 				}
 			}
@@ -61,20 +63,20 @@ int main() {
 	return 0;
 }
 
-void fsmUpdateLights() {
-	// Kode her
-	return;
-}
-
-State fsmDecideNextState(State currentState, const Node* priorityQueue) {
+State fsmDecideNextState(State currentState, const Node* priorityQueue, const int currentFloor) {
 	State nextState = currentState;
 
 	switch (currentState) {
 		case Startup:
 
-			for (unsigned int i = 0; i < HARDWARE_NUMBER_OF_FLOORS; i++) {
-				if (hardware_read_floor_sensor(i)) {
-					nextState = Idle;
+			if (hardware_read_stop_signal()) {
+				nextState = Stop;
+			}
+			else {
+				for (unsigned int i = 0; i < HARDWARE_NUMBER_OF_FLOORS; i++) {
+					if (hardware_read_floor_sensor(i)) {
+						nextState = Idle;
+					}
 				}
 			}
 
@@ -95,14 +97,41 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue) {
 
 		case Move:
 
+			if (hardware_read_stop_signal()) {
+				nextState = Stop;
+			}
+			else {
+				if (currentFloor == priorityQueue->floor) {
+					nextState = DoorOpen;
+				}
+			}
+
 		break;
 
 		case DoorOpen:
 
+			if (hardware_read_stop_signal()) {
+				nextState = Stop;
+			}
+			else {
+				/*
+				if (doorIsOpen()) {
+					if (!queueIsEmpty(priorityQueue)) {
+						nextState = Move;	
+					}
+					else {
+						nextState = Idle;
+					}
+				}*/
+			}
+
 		break;
 		
 		case Stop:
-
+			if (!hardware_read_stop_signal()) {
+				nextState = Startup;
+			}
+			
 		break;
 
 		default:
@@ -112,7 +141,7 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue) {
 	return nextState;
 }
 
-void fsmTransition(State currentState, State nextState) {
+void fsmTransition(State currentState, State nextState, Node* priorityQueue) {
 
 	// Perform exit for current state	
 	switch (currentState) {
@@ -121,24 +150,26 @@ void fsmTransition(State currentState, State nextState) {
 		break;
 
 		case Idle:
-
+			// No exit operation
 		break;
 
 		case Move:
-
+			hardware_command_movement(HARDWARE_MOVEMENT_STOP);
 		break;
 
 		case DoorOpen:
-
+			// No exit
 		break;
 		
 		case Stop:
-
+			hardware_command_stop_light(false);
 		break;
 
 		default:
 		break;
 	}
+
+
 
 	// Perform enter for next state	
 	switch (nextState) {
@@ -161,15 +192,23 @@ void fsmTransition(State currentState, State nextState) {
 		break;
 
 		case Move:
-
+			hardware_command_movement(priorityQueue->direction);
 		break;
 
 		case DoorOpen:
+			for (unsigned int orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
+				hardware_command_order_light(priorityQueue->floor, orderType, false);
+			}
+
+			hardware_command_floor_indicator_on(priorityQueue->floor);
+			// TODO: Open and close door
+			priorityQueue = queuePop(priorityQueue, priorityQueue->floor);
 
 		break;
 		
 		case Stop:
-
+			hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+			hardware_command_stop_light(true);
 		break;
 
 		default:
@@ -185,19 +224,28 @@ void fsmStateUpdate(State currentState, bool* shouldClearOrders) {
 		break;
 
 		case Idle:
-			
+			// No update
 		break;
 
 		case Move:
-
+			// No update
 		break;
 
 		case DoorOpen:
-
+			// TODO: poll door
 		break;
 		
 		case Stop:
+		{
 
+			for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+				if (hardware_read_floor_sensor(floor)) {
+					doorRequestOpenAndAutoclose();
+				}
+			}
+
+			*shouldClearOrders = true;
+		}
 		break;
 
 		default:
