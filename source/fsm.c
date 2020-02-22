@@ -21,7 +21,8 @@ int main() {
 	Node* priorityQueue = NULL;
 
 	bool* shouldClearOrders = malloc(sizeof(bool));
-	
+	int currentFloor = -1;
+
     while(1) {
 		State nextState = fsmDecideNextState(currentState, priorityQueue);	
 
@@ -31,14 +32,21 @@ int main() {
 			*shouldClearOrders = false;
 		}
 
+		for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+			if (hardware_read_floor_sensor(floor)) {
+				currentFloor = floor;
+				break;
+			}
+		}
+
 		fsmStateUpdate(currentState, shouldClearOrders);
 
-		if (!shouldClearOrders) {
+		if (!shouldClearOrders && currentFloor != -1) {
 			for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
 				for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
 
 					if (hardware_read_order(floor, orderType)) {
-						// queueAddNode(nodeCreate(floor, orderType), priority_queue, );
+						queueAddNode(nodeCreate(floor, orderType), priorityQueue, currentFloor);
 					}
 				}
 			}
@@ -74,10 +82,14 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue) {
 
 		case Idle:
 
-			if (!hardware_read_stop_signal() && !priorityQueue) {
-				nextState = Move;
+			if (!hardware_read_stop_signal()) {
+				if (queueIsEmpty(priorityQueue)) {
+					nextState = Move;
+				}
 			}
-
+			else {
+				nextState = Stop;
+			}
 
 		break;
 
