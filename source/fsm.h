@@ -11,6 +11,7 @@
 
 #include "hardware.h"
 #include "priority_queue.h"
+#include "door.h"
 
 /**
  * @brief Enum of the possible defined states

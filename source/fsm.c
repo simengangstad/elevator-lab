@@ -23,6 +23,8 @@ int main() {
 	bool* shouldClearOrders = malloc(sizeof(bool));
 	int currentFloor = -1;
 
+	while(1);
+
     while(1) {
 		State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);	
 
@@ -40,7 +42,7 @@ int main() {
 		}
 
 		fsmStateUpdate(currentState, shouldClearOrders);
-		// doorUpdate();
+		doorUpdate();
 
 		if (!shouldClearOrders && currentFloor != -1) {
 			for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
@@ -114,7 +116,6 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue, const in
 				nextState = Stop;
 			}
 			else {
-				/*
 				if (doorIsOpen()) {
 					if (!queueIsEmpty(priorityQueue)) {
 						nextState = Move;	
@@ -122,7 +123,7 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue, const in
 					else {
 						nextState = Idle;
 					}
-				}*/
+				}
 			}
 
 		break;
@@ -131,7 +132,7 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue, const in
 			if (!hardware_read_stop_signal()) {
 				nextState = Startup;
 			}
-			
+
 		break;
 
 		default:
@@ -201,7 +202,7 @@ void fsmTransition(State currentState, State nextState, Node* priorityQueue) {
 			}
 
 			hardware_command_floor_indicator_on(priorityQueue->floor);
-			// TODO: Open and close door
+			doorRequestOpenAndAutoclose();
 			priorityQueue = queuePop(priorityQueue, priorityQueue->floor);
 
 		break;
@@ -232,7 +233,7 @@ void fsmStateUpdate(State currentState, bool* shouldClearOrders) {
 		break;
 
 		case DoorOpen:
-			// TODO: poll door
+			// No update
 		break;
 		
 		case Stop:
