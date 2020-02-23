@@ -11,6 +11,25 @@ static void sigint_handler(int sig) {
     exit(0);
 }
 
+const char *getStateName(State state) {
+    switch (state) {
+        case Startup:
+            return "Startup";
+        case Idle:
+            return "Idle";
+        case Move:
+            return "Move";
+        case DoorOpen:
+            return "DoorOpen";
+        case Stop:
+            return "Stop";
+        case Undefined:
+            return "Undefined";
+        default:
+            return "Not a state";
+    }
+}
+
 int main() {
     int error = hardware_init();
     if (error != 0) {
@@ -43,7 +62,6 @@ int main() {
 
         if (nextState != currentState) {
             fsmTransition(currentState, nextState, &priorityQueue, currentFloor);
-            queuePrint(priorityQueue);
             currentState = nextState;
             *shouldClearOrders = false;
         }
