@@ -86,6 +86,8 @@ Node *queuePop(Node *firstNodePtr, int currentFloor) {
     }
 
     if (!firstNodePtr->nextNode) {
+        // TODO: should be unnecessary, test this
+        free(firstNodePtr);
         return NULL;
     }
 
