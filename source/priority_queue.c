@@ -81,6 +81,14 @@ Node *queueAddNode(Node *newNodePtr, Node *firstNodePtr, int currentFloor) {
 }
 
 Node *queuePop(Node *firstNodePtr, int currentFloor) {
+    if (!firstNodePtr) {
+        return NULL;
+    }
+
+    if (!firstNodePtr->nextNode) {
+        return NULL;
+    }
+
     Node *newFirstNodePtr = firstNodePtr->nextNode;
     free(firstNodePtr);
 
@@ -99,14 +107,15 @@ Node *queuePop(Node *firstNodePtr, int currentFloor) {
     return newFirstNodePtr;
 }
 
-void queueClear(Node *firstNodePtr) {
+Node *queueClear(Node *firstNodePtr) {
     Node *traverseNodePtr = firstNodePtr;
     while (traverseNodePtr) {
         Node *tempNodePtr = traverseNodePtr;
         traverseNodePtr = traverseNodePtr->nextNode;
         free(tempNodePtr);
     }
-    return;
+
+    return NULL;
 }
 
 bool queueIsEmpty(const Node *firstNodePtr) { return !firstNodePtr; }
@@ -117,6 +126,8 @@ void queuePrint(Node *firstNodePtr) {
     while (tempNodePtr) {
         printf("%i", n);
         printf(". order\n");
+        printf("Pointer address: %p\n", tempNodePtr);
+        printf("Next pointer address: %p\n", tempNodePtr->nextNode);
         printf("\t Floor: %i", tempNodePtr->floor);
         printf("\n");
         printf("\t Direction: %i", (int)tempNodePtr->direction);

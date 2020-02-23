@@ -6,19 +6,19 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
-#include "hardware.h"
+#include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
+#include "hardware.h"
 
 /**
  * @brief Structure to represent an order in the queue.
  */
 typedef struct Node {
-	struct Node* nextNode;
-	int floor;
-	HardwareOrder direction;
+    struct Node* nextNode;
+    int floor;
+    HardwareOrder direction;
 } Node;
 
 /**
@@ -61,7 +61,6 @@ int nodeGetFloor(const Node* nodePtr);
  */
 HardwareOrder nodeGetDirection(const Node* nodePtr);
 
-
 /**
  * @brief Adds an order based on a prioritation algorithm. If the queue contains duplicate orders, the lowest priority is deleted.
  *
@@ -87,13 +86,14 @@ Node* queueGetFirstNode(Node* firstNodePtr);
  */
 Node* queuePop(Node* firstNodePtr, int currentFloor);
 
-
 /**
  * @brief Removes every order in the queue.
  *
  * @param[in] firstNodePtr Pointer to the first order in the queue.
+ * 
+ * @return The new queue, will just return a null pointer.
  */
-void queueClear(Node* firstNodePtr);
+Node* queueClear(Node* firstNodePtr);
 
 /**
  * @brief Returns true if the queue is empty.
