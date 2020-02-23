@@ -1,4 +1,4 @@
-SIM := true
+SIM := false 
 SOURCES := fsm.c priority_queue.c door.c
 
 SOURCE_DIR := source
