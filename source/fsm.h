@@ -45,12 +45,12 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue, const in
  *
  * @param[in] currentState Current state of the elevator, the state the fsm is leaving.
  * @param[in] nextState Next state of the elevator, the state the fsm is entering.
- * @param[in] priorityQueue The current queue, used to check the current state for the orders
- * 							during the transition and update the queue. 
+ * @param[in] priorityQueuePtr Pointer to the current queue, used to check the current state for the orders
+ * 							   during the transition and update the queue. 
  * @param[in] currentFloor The current floor the elevator is at (if the elevator is between floors this
  * 							argument should be the last floor). 
  */
-void fsmTransition(State currentState, State nextState, Node* priorityQueue, const int currentFloor);
+void fsmTransition(State currentState, State nextState, Node** priorityQueuePtr, const int currentFloor);
 
 /**
  * @brief Will execute the update function defined for the @p currentState and update

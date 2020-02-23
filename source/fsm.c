@@ -29,7 +29,7 @@ int main() {
 
     // Transition to the start up state so we enter it properly before the main loop, this will just ensure
     // that the code associated with the start up state is executed
-    fsmTransition(Undefined, Startup, priorityQueue, currentFloor);
+    fsmTransition(Undefined, Startup, &priorityQueue, currentFloor);
 
     while (1) {
         State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);
@@ -42,26 +42,28 @@ int main() {
         }
 
         if (nextState != currentState) {
-            fsmTransition(currentState, nextState, priorityQueue, currentFloor);
+            fsmTransition(currentState, nextState, &priorityQueue, currentFloor);
+            queuePrint(priorityQueue);
             currentState = nextState;
             *shouldClearOrders = false;
         }
 
-        queuePrint(priorityQueue);
         fsmStateUpdate(currentState, shouldClearOrders);
         doorUpdate();
 
-        if (!*shouldClearOrders && currentFloor != -1) {
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                    if (hardware_read_order(floor, orderType)) {
-                        priorityQueue = queueAddNode(nodeCreate(floor, orderType), priorityQueue, currentFloor);
-                        hardware_command_order_light(floor, orderType, true);
+        if (!*shouldClearOrders) {
+            if (currentFloor != -1) {
+                for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+                    for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
+                        if (hardware_read_order(floor, orderType)) {
+                            priorityQueue = queueAddNode(nodeCreate(floor, orderType), priorityQueue, currentFloor);
+                            hardware_command_order_light(floor, orderType, true);
+                        }
                     }
                 }
             }
         } else {
-            queueClear(priorityQueue);
+            priorityQueue = queueClear(priorityQueue);
         }
     }
 
@@ -142,7 +144,7 @@ State fsmDecideNextState(State currentState, const Node *priorityQueue, const in
     return nextState;
 }
 
-void fsmTransition(State currentState, State nextState, Node *priorityQueue, const int currentFloor) {
+void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr, const int currentFloor) {
     // Perform exit for current state
     switch (currentState) {
         case Startup:
@@ -196,17 +198,17 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue, con
 
         case Move: {
             // TODO: what happens if we order to the current floor, where will it go?
-            HardwareMovement direction = priorityQueue->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            HardwareMovement direction = (*priorityQueuePtr)->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
             hardware_command_movement(direction);
         } break;
         case DoorOpen:
             for (unsigned int orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                hardware_command_order_light(priorityQueue->floor, orderType, false);
+                hardware_command_order_light((*priorityQueuePtr)->floor, orderType, false);
             }
 
-            hardware_command_floor_indicator_on(priorityQueue->floor);
+            hardware_command_floor_indicator_on((*priorityQueuePtr)->floor);
             doorRequestOpenAndAutoclose();
-            priorityQueue = queuePop(priorityQueue, priorityQueue->floor);
+            *priorityQueuePtr = queuePop((*priorityQueuePtr), (*priorityQueuePtr)->floor);
 
             break;
 
