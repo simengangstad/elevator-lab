@@ -23,12 +23,6 @@ int main() {
     State currentState = Startup;
     Node *priorityQueue = NULL;
 
-    while (1) {
-        priorityQueue = queueAddNode(nodeCreate(0, HARDWARE_MOVEMENT_UP), priorityQueue, 3);
-    }
-
-    return 0;
-
     bool *shouldClearOrders = malloc(sizeof(bool));
     *shouldClearOrders = false;
     int currentFloor = -1;
@@ -53,6 +47,7 @@ int main() {
             *shouldClearOrders = false;
         }
 
+        queuePrint(priorityQueue);
         fsmStateUpdate(currentState, shouldClearOrders);
         doorUpdate();
 
@@ -122,7 +117,7 @@ State fsmDecideNextState(State currentState, const Node *priorityQueue, const in
             if (hardware_read_stop_signal()) {
                 nextState = Stop;
             } else {
-                if (doorIsOpen()) {
+                if (!doorIsOpen()) {
                     if (!queueIsEmpty(priorityQueue)) {
                         nextState = Move;
                     } else {
@@ -159,7 +154,7 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue, con
             break;
 
         case Move:
-            // hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+            hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             break;
 
         case DoorOpen:
@@ -186,7 +181,7 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue, con
                 }
 
                 for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                    hardware_command_order_light(floor, orderType, false);
+                    hardware_command_order_light(floor, orderType, 0);
                 }
             }
 
@@ -201,8 +196,8 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue, con
 
         case Move: {
             // TODO: what happens if we order to the current floor, where will it go?
-            // HardwareMovement direction = priorityQueue->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
-            // hardware_command_movement(direction);
+            HardwareMovement direction = priorityQueue->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            hardware_command_movement(direction);
         } break;
         case DoorOpen:
             for (unsigned int orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
