@@ -6,25 +6,26 @@
 #ifndef FSM_H
 #define FSM_H
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#include "door.h"
 #include "hardware.h"
 #include "priority_queue.h"
-#include "door.h"
 
 /**
  * @brief Enum of the possible defined states
  */
 typedef enum {
-	Startup,
-	Idle,
-	Move,
-	DoorOpen,
-	Stop,
-	Undefined
-} State; 
-
+    Startup,
+    Idle,
+    Move,
+    DoorOpen,
+    Stop,
+    Undefined
+} State;
 
 /**
  * @brief Polls relevant hardware and decides next state.
@@ -46,8 +47,10 @@ State fsmDecideNextState(State currentState, const Node* priorityQueue, const in
  * @param[in] nextState Next state of the elevator, the state the fsm is entering.
  * @param[in] priorityQueue The current queue, used to check the current state for the orders
  * 							during the transition and update the queue. 
+ * @param[in] currentFloor The current floor the elevator is at (if the elevator is between floors this
+ * 							argument should be the last floor). 
  */
-void fsmTransition(State currentState, State nextState, Node* priorityQueue);
+void fsmTransition(State currentState, State nextState, Node* priorityQueue, const int currentFloor);
 
 /**
  * @brief Will execute the update function defined for the @p currentState and update

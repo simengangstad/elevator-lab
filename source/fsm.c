@@ -4,6 +4,13 @@
 
 #include "fsm.h"
 
+static void sigint_handler(int sig) {
+    (void)(sig);
+    printf("Terminating elevator\n");
+    hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+    exit(0);
+}
+
 int main() {
     int error = hardware_init();
     if (error != 0) {
@@ -11,38 +18,39 @@ int main() {
         exit(1);
     }
 
+    signal(SIGINT, sigint_handler);
+
     State currentState = Startup;
     Node *priorityQueue = NULL;
+
+    while (1) {
+        priorityQueue = queueAddNode(nodeCreate(0, HARDWARE_MOVEMENT_UP), priorityQueue, 3);
+    }
+
+    return 0;
 
     bool *shouldClearOrders = malloc(sizeof(bool));
     *shouldClearOrders = false;
     int currentFloor = -1;
-    bool reset = false;
 
     // Transition to the start up state so we enter it properly before the main loop, this will just ensure
     // that the code associated with the start up state is executed
-
-    if (reset) {
-        hardware_command_movement(HARDWARE_MOVEMENT_STOP);
-        return 0;
-    }
-
-    fsmTransition(Undefined, Startup, priorityQueue);
+    fsmTransition(Undefined, Startup, priorityQueue, currentFloor);
 
     while (1) {
         State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);
-
-        if (nextState != currentState) {
-            fsmTransition(currentState, nextState, priorityQueue);
-            currentState = nextState;
-            *shouldClearOrders = false;
-        }
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
             if (hardware_read_floor_sensor(floor)) {
                 currentFloor = floor;
                 break;
             }
+        }
+
+        if (nextState != currentState) {
+            fsmTransition(currentState, nextState, priorityQueue, currentFloor);
+            currentState = nextState;
+            *shouldClearOrders = false;
         }
 
         fsmStateUpdate(currentState, shouldClearOrders);
@@ -139,7 +147,7 @@ State fsmDecideNextState(State currentState, const Node *priorityQueue, const in
     return nextState;
 }
 
-void fsmTransition(State currentState, State nextState, Node *priorityQueue) {
+void fsmTransition(State currentState, State nextState, Node *priorityQueue, const int currentFloor) {
     // Perform exit for current state
     switch (currentState) {
         case Startup:
@@ -151,7 +159,7 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue) {
             break;
 
         case Move:
-            hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+            // hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             break;
 
         case DoorOpen:
@@ -174,6 +182,7 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue) {
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
                 if (hardware_read_floor_sensor(floor)) {
                     isAtFloor = true;
+                    hardware_command_floor_indicator_on(floor);
                 }
 
                 for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
@@ -190,10 +199,11 @@ void fsmTransition(State currentState, State nextState, Node *priorityQueue) {
             // No enter
             break;
 
-        case Move:
-            hardware_command_movement(priorityQueue->direction);
-            break;
-
+        case Move: {
+            // TODO: what happens if we order to the current floor, where will it go?
+            // HardwareMovement direction = priorityQueue->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            // hardware_command_movement(direction);
+        } break;
         case DoorOpen:
             for (unsigned int orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
                 hardware_command_order_light(priorityQueue->floor, orderType, false);
