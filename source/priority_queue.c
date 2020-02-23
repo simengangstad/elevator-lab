@@ -75,9 +75,8 @@ Node *queueAddNode(Node *newNodePtr, Node *firstNodePtr, int currentFloor) {
                 currentNodePtr = currentNodePtr->nextNode;
             }
         }
-
-        queuePrint(newFirstNodePtr);
     }
+
     return newFirstNodePtr;
 }
 
