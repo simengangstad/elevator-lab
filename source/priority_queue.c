@@ -86,15 +86,16 @@ Node *queuePop(Node *firstNodePtr, int currentFloor) {
 
     // Seperate current goal from older orders, reprioritize by going through
     // older orders and adding them to queue again.
-    Node *remainingNodesPtr = newFirstNodePtr->nextNode;
+    /*Node *remainingNodesPtr = newFirstNodePtr->nextNode;
     newFirstNodePtr->nextNode = NULL;
-    while (!remainingNodesPtr) {
+
+    while (remainingNodesPtr) {
         Node *tempNodePtr = remainingNodesPtr;
         tempNodePtr->nextNode = NULL;
         newFirstNodePtr = queueAddNode(tempNodePtr, newFirstNodePtr, currentFloor);
         remainingNodesPtr = remainingNodesPtr->nextNode;
     }
-
+*/
     return newFirstNodePtr;
 }
 
