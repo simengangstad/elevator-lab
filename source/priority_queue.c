@@ -40,18 +40,15 @@ Node *queueAddNode(Node *newNodePtr, Node *firstNodePtr, int currentFloor) {
         newNodePtr->nextNode = NULL;
         newFirstNodePtr = newNodePtr;
     } else {
-        if ((((currentFloor < newNodePtr->floor) &&
-              (newNodePtr->floor < firstNodePtr->floor)) ||
-             ((currentFloor > newNodePtr->floor) &&
-              (newNodePtr->floor > firstNodePtr->floor))) &&
-            ((newNodePtr->direction == HARDWARE_ORDER_INSIDE) ||
-             (newNodePtr->direction ==
-              firstNodePtr->direction))) {  // If the new order is compatible as a
-            // layover: put it at the top.
+        // If the new order is on the way to the destination, put it at the top of the queue
+        if ((((currentFloor < newNodePtr->floor) && (newNodePtr->floor < firstNodePtr->floor)) ||
+             ((currentFloor > newNodePtr->floor) && (newNodePtr->floor > firstNodePtr->floor))) &&
+            ((newNodePtr->direction == HARDWARE_ORDER_INSIDE) || (newNodePtr->direction == firstNodePtr->direction))) {
             newNodePtr->nextNode = firstNodePtr;
             newFirstNodePtr = newNodePtr;
-        } else {
-            // If the new order is incompatible as a layover: put it at the bottom.
+        }
+        // If the new order is not on the way to the destination, put it at the bottom of the queue
+        else {
             newNodePtr->nextNode = NULL;
             newFirstNodePtr = firstNodePtr;
 
@@ -63,24 +60,23 @@ Node *queueAddNode(Node *newNodePtr, Node *firstNodePtr, int currentFloor) {
         }
 
         // Traverse queue, delete orders to duplicate floors
-        bool orderOnFloor[4] = {false, false, false,
-                                false};  // Lite dynamisk, pls fix
+        bool orderOnFloor[4] = {false, false, false, false};  // Lite dynamisk, pls fix
         Node *currentNodePtr = newFirstNodePtr;
-        Node *prevNodePtr = nodeCreate(
-            0, HARDWARE_ORDER_INSIDE);  // LnodeCreate(0, HARDWARE_ORDER_INSIDE);
-                                        // // Lite dynamisk dette her ass, men for å
-                                        // unngå sigfaultt
-        while (currentNodePtr != NULL) {
+        Node *prevNodePtr = NULL;
+
+        while (currentNodePtr) {
             if (orderOnFloor[currentNodePtr->floor]) {
                 prevNodePtr->nextNode = currentNodePtr->nextNode;
-                prevNodePtr = prevNodePtr;
+                free(currentNodePtr);
+                currentNodePtr = prevNodePtr->nextNode;
             } else {
                 orderOnFloor[currentNodePtr->floor] = true;
                 prevNodePtr = currentNodePtr;
+                currentNodePtr = currentNodePtr->nextNode;
             }
-            currentNodePtr = currentNodePtr->nextNode;
         }
-        free(prevNodePtr);
+
+        queuePrint(newFirstNodePtr);
     }
     return newFirstNodePtr;
 }
