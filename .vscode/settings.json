@@ -1,3 +1,12 @@
 {
-  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}"
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
+  "files.associations": {
+    "*.world": "xml",
+    "*.config": "xml",
+    "*.sdf": "xml",
+    "door_tests.h": "c",
+    "test_util.h": "c"
+  },
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true
 }
