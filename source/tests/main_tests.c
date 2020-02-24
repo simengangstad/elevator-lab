@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "door_tests.h"
+#include "fsm_tests.h"
 #include "../hardware.h"
 
 static void sigint_handler(int sig){
@@ -26,4 +27,5 @@ int main(){
     signal(SIGINT, sigint_handler);
 	
 	doorTestsValidate();
+    fsmTestsValidate();
 }
