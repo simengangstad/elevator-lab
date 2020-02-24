@@ -112,8 +112,7 @@ State fsmDecideNextState(State currentState, const Node *priorityQueue, const in
 
             if (hardware_read_stop_signal()) {
                 nextState = Stop;
-            } 
-            else {
+            } else {
                 if (!queueIsEmpty(priorityQueue)) {
                     nextState = Move;
                 }
@@ -217,7 +216,7 @@ void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr,
             break;
 
         case Move: {
-            // TODO: what happens if we order to the current floor, where will it go? Add 
+            // TODO: what happens if we order to the current floor, where will it go? Add
             //       direction
             HardwareMovement direction = (*priorityQueuePtr)->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
             hardware_command_movement(direction);

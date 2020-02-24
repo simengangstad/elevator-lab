@@ -29,7 +29,6 @@ void doorRequestOpenAndAutoclose() {
 }
 
 void doorUpdate() {
-
     if (doorIsOpen()) {
         if (hardware_read_obstruction_signal()) {
             globalDoorLastCloseRequestTime = time(NULL);
