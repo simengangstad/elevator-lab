@@ -1,15 +1,9 @@
 /**
  * @file
- * @brief Implementation of tests for the door module.
+ * @brief Implementation of the tests for the door module.
  */
 
-#include <stdio.h>
-#include <time.h>
-#include <assert.h>
-
 #include "hardware.h"
-#include "../door.h"
-#include "test_util.h"
 
 /**
  * @brief Will check if the door does not close when there is an obstruction. 
