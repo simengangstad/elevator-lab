@@ -10,9 +10,14 @@
 #include "door_tests.h"
 #include "fsm_tests.h"
 
-static void sigint_handler(int sig);
+static void sigint_handler(int sig) {
+    (void)(sig);
+    printf("Terminating elevator\n");
+    hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+    exit(0);
+}
 
-void test() {
+int main() {
     int error = hardware_init();
     if (error != 0) {
         fprintf(stderr, "Unable to initialize hardware\n");
@@ -23,11 +28,6 @@ void test() {
 
     doorTestsValidate();
     fsmTestsValidate();
-}
 
-static void sigint_handler(int sig) {
-    (void)(sig);
-    printf("Terminating elevator\n");
-    hardware_command_movement(HARDWARE_MOVEMENT_STOP);
-    exit(0);
+    return 0;
 }
