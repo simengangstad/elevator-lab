@@ -94,18 +94,17 @@ Node *queuePop(Node *firstNodePtr, int currentFloor) {
     Node *newFirstNodePtr = firstNodePtr->nextNode;
     free(firstNodePtr);
 
-    // Seperate current goal from older orders, reprioritize by going through
-    // older orders and adding them to queue again.
-    /*Node *remainingNodesPtr = newFirstNodePtr->nextNode;
+    // Check if orders on the bottom of the queue are compatible with the new goal by adding them back to the queue
+    Node *remainingNodesPtr = newFirstNodePtr->nextNode;
+    Node *remainingNodesPtrCopyForDeletion = remainingNodesPtr;
     newFirstNodePtr->nextNode = NULL;
 
     while (remainingNodesPtr) {
-        Node *tempNodePtr = remainingNodesPtr;
-        tempNodePtr->nextNode = NULL;
+        Node *tempNodePtr = nodeCreate(remainingNodesPtr->floor, remainingNodesPtr->direction);
         newFirstNodePtr = queueAddNode(tempNodePtr, newFirstNodePtr, currentFloor);
         remainingNodesPtr = remainingNodesPtr->nextNode;
     }
-*/
+    queueClear(remainingNodesPtrCopyForDeletion);
     return newFirstNodePtr;
 }
 
@@ -128,9 +127,9 @@ void queuePrint(Node *firstNodePtr) {
     while (tempNodePtr) {
         printf("%i", n);
         printf(". order\n");
-        printf("Pointer address: %p\n", tempNodePtr);
-        printf("Next pointer address: %p\n", tempNodePtr->nextNode);
-        printf("\t Floor: %i", tempNodePtr->floor);
+        printf("\tPointer address: %p\n", tempNodePtr);
+        printf("\tNext pointer address: %p\n", tempNodePtr->nextNode);
+        printf("\t Floor: %i", tempNodePtr->floor + 1);
         printf("\n");
         printf("\t Direction: %i", (int)tempNodePtr->direction);
         printf("\n");
