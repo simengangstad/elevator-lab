@@ -13,20 +13,22 @@ TEST_OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
 
 DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 
-ifeq ($(SIM), true)
-  DRIVER_SOURCE := hardware_sim.c
+ifdef SIM
+DRIVER_SOURCE := hardware_sim.c
 else
-  DRIVER_SOURCE := hardware.c io.c
+DRIVER_SOURCE := hardware.c io.c
 endif
 
 CC := gcc
 CFLAGS := -O0 -g3 -Wall -Werror -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
 
-ifeq ($(SIM), true)
-  LDFLAGS := -L$(BUILD_DIR) -ldriver 
+ifdef SIM
+LDFLAGS := -L$(BUILD_DIR) -ldriver 
 else
-  LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
+LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
 endif
+
+
 
 .DEFAULT_GOAL := elevator
 
