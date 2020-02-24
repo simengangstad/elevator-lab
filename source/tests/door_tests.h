@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include "../hardware.h"
 #include "../door.h"
 #include "test_util.h"
 
