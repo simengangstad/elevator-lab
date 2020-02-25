@@ -28,9 +28,11 @@ Node *queue_add_node(Node *p_new_node, Node *p_first_node_of_queue, const int cu
         p_new_first_node_of_queue = p_new_node;
     } else {
         // If the new order is on the way to the destination, put it at the top of the queue
-        if (((current_floor < p_new_node->floor && p_new_node->floor < p_first_node_of_queue->floor) ||
-             (current_floor > p_new_node->floor && p_new_node->floor > p_first_node_of_queue->floor)) &&
-            (p_new_node->direction == HARDWARE_ORDER_INSIDE || p_new_node->direction == p_first_node_of_queue->direction)) {
+
+        const bool new_order_is_on_way = (current_floor < p_new_node->floor && p_new_node->floor < p_first_node_of_queue->floor && p_new_node->direction != HARDWARE_ORDER_DOWN) ||
+                                         (current_floor > p_new_node->floor && p_new_node->floor > p_first_node_of_queue->floor && p_new_node->direction != HARDWARE_ORDER_UP);
+
+        if (new_order_is_on_way) {
             p_new_node->next_node = p_first_node_of_queue;
             p_new_first_node_of_queue = p_new_node;
         }
@@ -81,6 +83,19 @@ Node *queue_pop(Node *p_first_node_of_queue, int current_floor) {
 
     Node *p_new_first_node_of_queue = p_first_node_of_queue->next_node;
     free(p_first_node_of_queue);
+
+    // Check if orders on the bottom of the queue are compatible with the new goal by adding them back to the queue
+    Node *p_remaining_nodes = p_new_first_node_of_queue->next_node;
+    Node *p_remaining_nodes_copy = p_remaining_nodes;
+    p_new_first_node_of_queue->next_node = NULL;
+
+    while (p_remaining_nodes) {
+        Node *p_temp_node = node_create(p_remaining_nodes->floor, p_remaining_nodes->direction);
+        p_new_first_node_of_queue = queue_add_node(p_temp_node, p_new_first_node_of_queue, current_floor);
+        p_remaining_nodes = p_remaining_nodes->next_node;
+    }
+
+    queue_clear(p_remaining_nodes_copy);
 
     return p_new_first_node_of_queue;
 }
