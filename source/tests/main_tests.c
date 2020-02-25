@@ -9,6 +9,7 @@
 #include "../hardware.h"
 #include "door_tests.h"
 #include "fsm_tests.h"
+#include "priority_queue_tests.h"
 
 static void sigint_handler(int sig) {
     (void)(sig);
@@ -26,6 +27,7 @@ int main() {
 
     signal(SIGINT, sigint_handler);
 
+    priorityQueueTestsValidate();
     doorTestsValidate();
     fsmTestsValidate();
 

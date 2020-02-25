@@ -150,7 +150,7 @@ void testQueueHelpFunctions() {
 
 
 
-void validatePriorityQueueTests() {
+void priorityQueueTestsValidate() {
 	printf("Test 1: Test that makeNode() works\n");	
 	assert(testMakeNode());
 	printf("Test 1 succesful if passed to here.\n");
