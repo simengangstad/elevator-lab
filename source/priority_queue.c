@@ -112,7 +112,7 @@ void queue_print(Node *p_first_node_of_queue) {
         printf("\n");
         n++;
 
-        p_temp_node = p_temp_node->nextNode;
+        p_temp_node = p_temp_node->next_node;
     }
     printf("End of queue\n");
     return;
