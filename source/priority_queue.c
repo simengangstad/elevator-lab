@@ -113,7 +113,7 @@ Node *queue_clear(Node *p_first_node_of_queue) {
 
 bool queue_is_empty(const Node *p_first_node_of_queue) { return !p_first_node_of_queue; }
 
-void queue_print(Node *p_first_node_of_queue) {
+void queue_print(const Node *p_first_node_of_queue) {
     Node *p_temp_node = p_first_node_of_queue;
     int n = 1;
     while (p_temp_node) {
