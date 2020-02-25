@@ -5,62 +5,51 @@
 
 #include "priority_queue.h"
 
-Node *nodeCreate(int newFloor, HardwareOrder newDirection) {
-    Node *newNodePtr = NULL;
-    newNodePtr = (Node *)malloc(sizeof(Node));
+Node *node_create(const int floor, const HardwareOrder direction) {
+    Node *p_new_node = NULL;
+    p_new_node = (Node *)malloc(sizeof(Node));
 
-    newNodePtr->floor = newFloor;
-    newNodePtr->direction = newDirection;
-    newNodePtr->nextNode = NULL;
+    p_new_node->floor = floor;
+    p_new_node->direction = direction;
+    p_new_node->next_node = NULL;
 
-    return newNodePtr;
+    return p_new_node;
 }
 
-void nodeDelete(Node *nodePtr) {
-    free(nodePtr);
-    return;
-}
-
-int nodeGetFloor(const Node *nodePtr) { return nodePtr->floor; }
-
-HardwareOrder nodeGetDirection(const Node *nodePtr) {
-    return nodePtr->direction;
-}
-
-Node *queueAddNode(Node *newNodePtr, Node *firstNodePtr, int currentFloor) {
-    // Nødvendig?
-    if (!newNodePtr) {
-        return firstNodePtr;
+Node *queue_add_node(Node *p_new_node, const Node *p_first_node, const int current_floor) {
+    if (!p_new_node) {
+        return p_first_node;
     }
 
-    Node *newFirstNodePtr = NULL;
+    Node *p_new_first_node = NULL;
 
     // Algorithm for adding node to queue
-    if (!firstNodePtr) {  // If the queue is empty:
-        newNodePtr->nextNode = NULL;
-        newFirstNodePtr = newNodePtr;
+    if (queue_is_empty(p_first_node)) {
+        p_new_node->next_node = NULL;
+        p_new_first_node = p_new_node;
     } else {
         // If the new order is on the way to the destination, put it at the top of the queue
-        if ((((currentFloor < newNodePtr->floor) && (newNodePtr->floor < firstNodePtr->floor)) ||
-             ((currentFloor > newNodePtr->floor) && (newNodePtr->floor > firstNodePtr->floor))) &&
-            ((newNodePtr->direction == HARDWARE_ORDER_INSIDE) || (newNodePtr->direction == firstNodePtr->direction))) {
-            newNodePtr->nextNode = firstNodePtr;
-            newFirstNodePtr = newNodePtr;
+        if (((current_floor < p_new_node->floor && p_new_node->floor < p_first_node->floor) ||
+             (current_floor > p_new_node->floor && p_new_node->floor > p_first_node->floor)) &&
+            (p_new_node->direction == HARDWARE_ORDER_INSIDE || p_new_node->direction == p_first_node->direction)) {
+            p_new_node->next_node = p_first_node;
+            p_new_first_node = p_new_node;
         }
         // If the new order is not on the way to the destination, put it at the bottom of the queue
         else {
-            newNodePtr->nextNode = NULL;
-            newFirstNodePtr = firstNodePtr;
+            p_new_node->next_node = NULL;
+            p_new_first_node = p_first_node;
 
-            Node *currentNodePtr = newFirstNodePtr;
-            while (currentNodePtr->nextNode != NULL) {
-                currentNodePtr = currentNodePtr->nextNode;
+            // Traverse the queue and place the new order at the bottom
+            Node *p_current_node = p_new_first_node;
+            while (p_current_node->next_node) {
+                p_current_node = p_current_node->next_node;
             }
-            currentNodePtr->nextNode = newNodePtr;
+            p_current_node->next_node = p_new_node;
         }
 
         // Traverse queue, delete orders to duplicate floors
-        bool orderOnFloor[4] = {false, false, false, false};  // Lite dynamisk, pls fix
+        bool orderOnFloor[4] = {false, false, false, false};
         Node *currentNodePtr = newFirstNodePtr;
         Node *prevNodePtr = NULL;
 

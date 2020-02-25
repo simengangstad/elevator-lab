@@ -19,46 +19,47 @@
  * @brief Enum of the possible defined states
  */
 typedef enum {
-    Startup,
-    Idle,
-    Move,
-    DoorOpen,
-    Stop,
-    Undefined
+    STARTUP,
+    IDLE,
+    MOVE,
+    DOOR_OPEN,
+    STOP,
+    UNDEFINED
 } State;
 
 /**
- * @brief Polls relevant hardware and decides next state.
+ * @brief Polls relevant hardware, checks the current state and queue, and decides next state.
  *
- * @param[in] currentState Current state of the elevator
- * @param[in] priortyQueue The current queue, makes it possible for states to check if 
- * 						   the queue is in a given state in order to decide the next state. 
- * @param[in] currentFloor The current floor the elevator is at. If the elevator is between floors this argument 
- * 						   should be the last floor the elevator was at. 
+ * @param[in] current_state Current state of the elevator
+ * @param[in] p_priority_queue The current queue, makes it possible for states to check if 
+ * 						     the queue is in a given state in order to decide the next state. 
+ * @param[in] current_floor The current floor the elevator is at. If the elevator is between floors this argument 
+ * 						    should be the last floor the elevator was at. 
  * @return Next state in the fsm based on current state of hardware.
  */
-State fsmDecideNextState(State currentState, const Node* priorityQueue, const int currentFloor);
+State fsm_decide_next_state(const State current_state, const Node* p_priority_queue, const int current_floor);
 
 /**
- * @brief Handles transitioning between two states, @p currentState and @p nextState. Will execute the exit operations for @p currentState 
- * 		  and the enter operations for @p nextState.
+ * @brief Handles transitioning between two states, @p current_state and @p next_state. Will execute the exit operations for @p current_state 
+ * 		  and the enter operations for @p next_state.
  *
- * @param[in] currentState Current state of the elevator, the state the fsm is leaving.
- * @param[in] nextState Next state of the elevator, the state the fsm is entering.
- * @param[in] priorityQueuePtr Pointer to the current queue, used to check the current state for the orders
+ * @param[in] current_state Current state of the elevator, the state the fsm is leaving.
+ * @param[in] next_state Next state of the elevator, the state the fsm is entering.
+ * @param[in, out] pp_priority_queue Pointer to the current queue, used to check the current state for the orders
  * 							   during the transition and update the queue. 
- * @param[in] currentFloor The current floor the elevator is at (if the elevator is between floors this
+ * @param[in] current_floor The current floor the elevator is at (if the elevator is between floors this
  * 							argument should be the last floor). 
  */
-void fsmTransition(State currentState, State nextState, Node** priorityQueuePtr, const int currentFloor);
+void fsm_transition(const State current_state, const State next_state, Node** pp_priority_queue, const int current_floor);
 
 /**
- * @brief Will execute the update function defined for the @p currentState and update
+ * @brief Will execute the update function defined for the @p current_state and update
  * 		  internal state.
  * 
- * @param[in] shouldClearOrders Makes it possible for states to clear the queue and prevent further enqueuements.
- * 							    This is utilized by the #Startup and #Stop state. 
+ * @param[in] current_state The current state that shall have its update function called. 
+ * @param[in] p_should_clear_orders Makes it possible for states to clear the queue and prevent further enqueuements.
+ * 							        This is utilized by the #Startup and #Stop state. 
  */
-void fsmStateUpdate(State currentState, bool* shouldClearOrders);
+void fsmStateUpdate(const State current_state, bool* p_should_clear_orders);
 
 #endif

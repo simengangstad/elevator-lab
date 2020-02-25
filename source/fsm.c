@@ -11,19 +11,19 @@ static void sigint_handler(int sig) {
     exit(0);
 }
 
-const char *getStateName(State state) {
+const char *get_state_name(const State state) {
     switch (state) {
-        case Startup:
+        case STARTUP:
             return "Startup";
-        case Idle:
+        case IDLE:
             return "Idle";
-        case Move:
+        case MOVE:
             return "Move";
-        case DoorOpen:
+        case DOOR_OPEN:
             return "DoorOpen";
-        case Stop:
+        case STOP:
             return "Stop";
-        case Undefined:
+        case UNDEFINED:
             return "Undefined";
         default:
             return "Not a state";
@@ -39,16 +39,16 @@ int main() {
 
     signal(SIGINT, sigint_handler);
 
-    State currentState = Startup;
-    Node *priorityQueue = NULL;
+    State current_state = STARTUP;
+    Node *p_priority_queue = NULL;
 
-    bool *shouldClearOrders = malloc(sizeof(bool));
-    *shouldClearOrders = false;
-    int currentFloor = -1;
+    bool *p_should_clear_orders = malloc(sizeof(bool));
+    *p_should_clear_orders = false;
+    int current_floor = -1;
 
     // Transition to the start up state so we enter it properly before the main loop, this will just ensure
     // that the code associated with the start up state is executed
-    fsmTransition(Undefined, Startup, &priorityQueue, currentFloor);
+    fsmTransition(UNDEFINED, STARTUP, &p_priority_queue, current_floor);
 
     while (1) {
         State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);
@@ -90,67 +90,61 @@ int main() {
     return 0;
 }
 
-State fsmDecideNextState(State currentState, const Node *priorityQueue, const int currentFloor) {
-    State nextState = currentState;
+State fsm_decide_next_state(const State current_state, const Node *p_priority_queue, const int current_floor) {
+    State next_state = current_state;
 
-    switch (currentState) {
-        case Startup:
+    switch (current_state) {
+        case STARTUP:
 
             if (hardware_read_stop_signal()) {
-                nextState = Stop;
+                next_state = STOP;
             } else {
-                for (unsigned int i = 0; i < HARDWARE_NUMBER_OF_FLOORS; i++) {
-                    if (hardware_read_floor_sensor(i)) {
-                        nextState = Idle;
+                for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+                    if (hardware_read_floor_sensor(floor)) {
+                        next_state = IDLE;
                     }
                 }
             }
 
             break;
 
-        case Idle:
+        case IDLE:
 
             if (hardware_read_stop_signal()) {
-                nextState = Stop;
-            } else {
-                if (!queueIsEmpty(priorityQueue)) {
-                    nextState = Move;
+                next_state = STOP;
+            } else if (!queue_is_empty(p_priority_queue)) {
+                next_state = MOVE;
+            }
+
+            break;
+
+        case MOVE:
+
+            if (hardware_read_stop_signal()) {
+                next_state = STOP;
+            } else if (current_floor == p_priority_queue->floor) {
+                next_state = DOOR_OPEN;
+            }
+
+            break;
+
+        case DOOR_OPEN:
+
+            if (hardware_read_stop_signal()) {
+                next_state = STOP;
+            } else if (!door_is_open()) {
+                if (queue_is_empty(p_priority_queue)) {
+                    next_state = IDLE;
+                } else {
+                    next_state = MOVE;
                 }
             }
 
             break;
 
-        case Move:
-
-            if (hardware_read_stop_signal()) {
-                nextState = Stop;
-            } else {
-                if (currentFloor == priorityQueue->floor) {
-                    nextState = DoorOpen;
-                }
-            }
-
-            break;
-
-        case DoorOpen:
-
-            if (hardware_read_stop_signal()) {
-                nextState = Stop;
-            } else {
-                if (!doorIsOpen()) {
-                    if (!queueIsEmpty(priorityQueue)) {
-                        nextState = Move;
-                    } else {
-                        nextState = Idle;
-                    }
-                }
-            }
-
-            break;
-
-        case Stop:
+        case STOP:
             if (!hardware_read_stop_signal()) {
-                nextState = Idle;
+                next_state = IDLE;
             }
 
             break;
@@ -159,7 +153,7 @@ State fsmDecideNextState(State currentState, const Node *priorityQueue, const in
             break;
     }
 
-    return nextState;
+    return next_state;
 }
 
 void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr, const int currentFloor) {
