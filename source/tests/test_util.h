@@ -11,6 +11,6 @@
 /**
  * @brief Will block until enter key is pressed.
  */
-void testUtilWaitUntilEnterKeyIsPressed();
+void test_util_wait_until_enter_key_is_pressed();
 
 #endif

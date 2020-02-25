@@ -156,7 +156,7 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
     return next_state;
 }
 
-void fsm_transition(const State current_state, const State next_state, Node** pp_priority_queue, const int current_floor) {
+void fsm_transition(const State current_state, const State next_state, Node **pp_priority_queue, const int current_floor) {
     // Perform exit for current state
     switch (current_state) {
         case STARTUP:
@@ -237,7 +237,7 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
     }
 }
 
-void fsm_state_update(const State current_state, bool* p_should_clear_orders) {
+void fsm_state_update(const State current_state, bool *p_should_clear_orders) {
     switch (current_state) {
         case STARTUP:
             *p_should_clear_orders = true;

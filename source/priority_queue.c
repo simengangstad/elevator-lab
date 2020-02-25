@@ -16,7 +16,7 @@ Node *node_create(const int floor, const HardwareOrder direction) {
     return p_new_node;
 }
 
-Node *queue_add_node(Node *p_new_node, const Node *p_first_node_of_queue, const int current_floor) {
+Node *queue_add_node(Node *p_new_node, Node *p_first_node_of_queue, const int current_floor) {
     if (!p_new_node) {
         return p_first_node_of_queue;
     }
@@ -112,7 +112,7 @@ void queue_print(const Node *p_first_node_of_queue) {
         printf("\n");
         n++;
 
-        p_temp_node = p_temp_node->nextNode;
+        p_temp_node = p_temp_node->next_node;
     }
     printf("End of queue\n");
     return;
