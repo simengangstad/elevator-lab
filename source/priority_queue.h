@@ -77,6 +77,6 @@ bool queue_is_empty(const Node* p_first_node_of_queue);
  *
  * @param[in] p_first_node_of_queue Pointer to first node in queue.
  */
-void queue_print(Node* p_first_node_of_queue);
+void queue_print(const Node* p_first_node_of_queue);
 
 #endif
