@@ -1,13 +1,14 @@
 /**
- * @file door.h
+ * @file 
  * @brief Represents the actions with the door. It contains its own timer (thus tracks state). It also calls to hardware.
- */ 
+ */
 
 #ifndef DOOR_H
 #define DOOR_H
+#define DOOR_OPEN_TIME_INTERVAL 3.0
 
-#include <time.h>
 #include <stdbool.h>
+#include <time.h>
 #include "hardware.h"
 
 /**

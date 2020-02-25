@@ -11,17 +11,6 @@
 /**
  * @brief Will block until enter key is pressed.
  */
-void testUtilWaitUntilEnterKeyIsPressed() {
-	while(1) {
-		char ch = fgetc(stdin);
-		
-		if (ch == 0x0A) {
-			break;
-		}
-
-		// Read dummy character to clear input buffer, which inserts after character input
-		ch = getchar();
-	}
-}
+void testUtilWaitUntilEnterKeyIsPressed();
 
 #endif

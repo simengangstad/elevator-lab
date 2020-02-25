@@ -3,4 +3,4 @@ latex/
 build/
 .clang
 elevator
-tests
+test
