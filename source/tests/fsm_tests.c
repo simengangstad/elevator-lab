@@ -19,7 +19,7 @@ static bool fsmTestTransitionRequirements() {
         printf("Testing transition from startup to idle.\n");
         // Testing the transition from startup to idle, this requires that the elevator
         // is at a floor
-        State state = Startup;
+        State state = STARTUP;
         bool isAtFloor = false;
 
         while (!isAtFloor) {
@@ -35,9 +35,9 @@ static bool fsmTestTransitionRequirements() {
 
         hardware_command_movement(HARDWARE_MOVEMENT_STOP);
 
-        state = fsmDecideNextState(state, NULL, -1);
+        state = fsm_decide_next_state(state, NULL, -1);
 
-        if (state != Idle) {
+        if (state != IDLE) {
             fprintf(stderr, "Did not transition to Idle from Startup. The requirements where not met\n");
             return false;
         }
@@ -49,7 +49,7 @@ static bool fsmTestTransitionRequirements() {
         printf("Testing transition from idle to move.\n");
         // Testing the transition from idle to move, this requires that the priority queue
         // is not empty and that the stop button is not pressed
-        State state = Idle;
+        State state = IDLE;
         unsigned int currentFloor = -1;
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
@@ -59,13 +59,13 @@ static bool fsmTestTransitionRequirements() {
             }
         }
 
-        Node* priorityQueue = queueAddNode(nodeCreate(3, HARDWARE_ORDER_DOWN), NULL, currentFloor);
+        Node* priorityQueue = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), NULL, currentFloor);
 
-        state = fsmDecideNextState(state, priorityQueue, currentFloor);
+        state = fsm_decide_next_state(state, priorityQueue, currentFloor);
 
-        if (state != Move) {
+        if (state != MOVE) {
             fprintf(stderr, "Did not transition to Move from Idle. The requirements where not met\n");
-            queueClear(priorityQueue);
+            queue_clear(priorityQueue);
             return false;
         }
 
@@ -76,13 +76,13 @@ static bool fsmTestTransitionRequirements() {
         printf("Testing transition from move to door open.\n");
         // Testing the transition from move to door open, this requires that the
         // elevator arrived at the queued floor
-        State state = Move;
+        State state = MOVE;
         unsigned int currentFloor = -1;
         Node* priorityQueue = NULL;
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
             if (hardware_read_floor_sensor(floor)) {
-                priorityQueue = queueAddNode(nodeCreate(3, HARDWARE_ORDER_DOWN), priorityQueue, floor);
+                priorityQueue = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), priorityQueue, floor);
                 currentFloor = floor;
                 break;
             }
@@ -102,16 +102,16 @@ static bool fsmTestTransitionRequirements() {
                 }
             }
 
-            state = fsmDecideNextState(state, priorityQueue, currentFloor);
+            state = fsm_decide_next_state(state, priorityQueue, currentFloor);
 
-            if (state == DoorOpen) {
+            if (state == DOOR_OPEN) {
                 hardware_command_movement(HARDWARE_MOVEMENT_STOP);
                 break;
             }
         }
 
-        queueClear(priorityQueue);
-        if (state != DoorOpen) {
+        queue_clear(priorityQueue);
+        if (state != DOOR_OPEN) {
             fprintf(stderr, "Did not transition to door open from move. The requirements where not met\n");
             return false;
         }
@@ -123,14 +123,14 @@ static bool fsmTestTransitionRequirements() {
         printf("Testing transition from door open to move.\n");
         // Testing the transition from door open to move, this requires that the
         // door is closed and that the  queue is not empty
-        State state = DoorOpen;
-        Node* priorityQueue = queueAddNode(nodeCreate(0, HARDWARE_ORDER_DOWN), NULL, 1);
+        State state = DOOR_OPEN;
+        Node* priorityQueue = queue_add_node(node_create(0, HARDWARE_ORDER_DOWN), NULL, 1);
         hardware_command_door_open(0);
 
-        state = fsmDecideNextState(state, priorityQueue, 3);
+        state = fsm_decide_next_state(state, priorityQueue, 3);
 
-        queueClear(priorityQueue);
-        if (state != Move) {
+        queue_clear(priorityQueue);
+        if (state != MOVE) {
             fprintf(stderr, "Did not transition to move from door open. The requirements where not met\n");
             return false;
         }
@@ -142,11 +142,11 @@ static bool fsmTestTransitionRequirements() {
         printf("Testing transition from door open to idle.\n");
         // Testing the transition from door open to idle, this requires that the
         // door is closed and that the queue is empty
-        State state = DoorOpen;
+        State state = DOOR_OPEN;
         hardware_command_door_open(0);
-        state = fsmDecideNextState(state, NULL, 3);
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Idle) {
+        if (state != IDLE) {
             fprintf(stderr, "Did not transition to idle from door open. The requirements where not met\n");
             return false;
         }
@@ -160,43 +160,43 @@ static bool fsmTestTransitionRequirements() {
         // requires that the stop button is pressed
 
         printf("Keep the stop button pressed now please. Press enter when ready.\n");
-        testUtilWaitUntilEnterKeyIsPressed();
+        test_util_wait_until_enter_key_is_pressed();
 
-        State state = Startup;
-        state = fsmDecideNextState(state, NULL, 3);
+        State state = STARTUP;
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Stop) {
+        if (state != STOP) {
             fprintf(stderr, "Did not transition to stop from startup. The requirements where not met\n");
             return false;
         }
 
-        state = Idle;
-        state = fsmDecideNextState(state, NULL, 3);
+        state = IDLE;
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Stop) {
+        if (state != STOP) {
             fprintf(stderr, "Did not transition to stop from stop. The requirements where not met\n");
             return false;
         }
 
-        state = Move;
-        state = fsmDecideNextState(state, NULL, 3);
+        state = MOVE;
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Stop) {
+        if (state != STOP) {
             fprintf(stderr, "Did not transition to stop from move. The requirements where not met\n");
             return false;
         }
 
-        state = DoorOpen;
-        state = fsmDecideNextState(state, NULL, 3);
+        state = DOOR_OPEN;
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Stop) {
+        if (state != STOP) {
             fprintf(stderr, "Did not transition to stop from door open. The requirements where not met\n");
             return false;
         }
 
         printf("OK.\n\n");
         printf("Release the stop button now please. Press enter when ready.\n");
-        testUtilWaitUntilEnterKeyIsPressed();
+        test_util_wait_until_enter_key_is_pressed();
     }
 
     {
@@ -204,11 +204,11 @@ static bool fsmTestTransitionRequirements() {
         // Testing the transition from stop to idle, this
         // requires that the stop button is release
 
-        State state = Stop;
+        State state = STOP;
 
-        state = fsmDecideNextState(state, NULL, 3);
+        state = fsm_decide_next_state(state, NULL, 3);
 
-        if (state != Idle) {
+        if (state != IDLE) {
             fprintf(stderr, "Did not transition to stop from startup. The requirements where not met\n");
             return false;
         }

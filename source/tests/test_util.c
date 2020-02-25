@@ -1,6 +1,6 @@
 #include "test_util.h"
 
-void testUtilWaitUntilEnterKeyIsPressed() {
+void test_util_wait_until_enter_key_is_pressed() {
     while (1) {
         char ch = fgetc(stdin);
 

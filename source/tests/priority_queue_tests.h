@@ -1,9 +1,10 @@
 /**
- * @brief 
- *
+ * @file 
+ * 
+ * @brief Tests for the priority queue. 
  */
 
-#ifndef PRIORITY_QUEUE_TESTS_H 
+#ifndef PRIORITY_QUEUE_TESTS_H
 #define PRIORITY_QUEUE_TESTS_H
 
 #include "../priority_queue.h"

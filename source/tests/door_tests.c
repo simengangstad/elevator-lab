@@ -17,20 +17,20 @@ static bool doorTestsCheckKeepsOpenWhileObstruction() {
     const float durationToCheck = 5.0f;
 
     printf("Enable obstruction now please. Will open door and try to close for %f seconds. Press enter to continue...\n", durationToCheck);
-    testUtilWaitUntilEnterKeyIsPressed();
+    test_util_wait_until_enter_key_is_pressed();
     // TODO: Test if this is necessary
     fflush(stdout);
 
-    doorRequestOpenAndAutoclose();
+    door_request_open_and_autoclose();
 
     const time_t startTime = time(NULL);
 
     bool doorOpen = false;
 
     while (time(NULL) - startTime <= durationToCheck) {
-        doorUpdate();
+        door_update();
 
-        doorOpen = doorIsOpen();
+        doorOpen = door_is_open();
 
         if (!doorOpen) {
             break;
@@ -57,20 +57,20 @@ static bool doorTestsCheckClosesWhenNoObstruction() {
     const float durationToCheck = 3.5f;
 
     printf("Disable obstruction now please. Will open door and try to autoclose. Press enter to continue...\n");
-    testUtilWaitUntilEnterKeyIsPressed();
+    test_util_wait_until_enter_key_is_pressed();
     fflush(stdout);
     // TODO: Test if this is necessary
 
-    doorRequestOpenAndAutoclose();
+    door_request_open_and_autoclose();
 
     const time_t startTime = time(NULL);
 
     while (time(NULL) - startTime <= durationToCheck) {
-        doorUpdate();
+        door_update();
         sleep(1);
     }
 
-    return !doorIsOpen();
+    return !door_is_open();
 }
 
 /**
@@ -83,11 +83,11 @@ static void doorTestsCheckTimerReset() {
     hardware_command_door_open(0);
 
     printf("Enable obstruction now please. Will open door and try to autoclose. Disable obstruction signal when ready and count the seconds it takes for the door to close. Press enter to continue...\n");
-    testUtilWaitUntilEnterKeyIsPressed();
-    doorRequestOpenAndAutoclose();
+    test_util_wait_until_enter_key_is_pressed();
+    door_request_open_and_autoclose();
 
-    while (doorIsOpen()) {
-        doorUpdate();
+    while (door_is_open()) {
+        door_update();
         sleep(1);
     }
 }
@@ -103,19 +103,19 @@ static bool doorTestsCheckDoorIsOpenFunction() {
     const float durationToCheck = 3.5f;
 
     printf("Disable obstruction please. Will open door and try to autoclose. Press enter to continue...\n");
-    testUtilWaitUntilEnterKeyIsPressed();
+    test_util_wait_until_enter_key_is_pressed();
 
-    doorRequestOpenAndAutoclose();
-    const bool doorOpened = doorIsOpen();
+    door_request_open_and_autoclose();
+    const bool doorOpened = door_is_open();
 
     const time_t startTime = time(NULL);
 
     while (time(NULL) - startTime <= durationToCheck) {
-        doorUpdate();
+        door_update();
         sleep(1);
     }
 
-    const bool doorClosed = !doorIsOpen();
+    const bool doorClosed = !door_is_open();
 
     return doorOpened && doorClosed;
 }
