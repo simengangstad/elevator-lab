@@ -1,7 +1,5 @@
-SIM := true 
-
 SOURCES := fsm.c priority_queue.c door.c
-TEST_SOURCES := main_tests.c test_util.c door.c door_tests.c priority_queue.c fsm.c fsm_tests.c
+TEST_SOURCES := main_tests.c test_util.c door.c door_tests.c fsm_tests.c fsm.c priority_queue_tests.c priority_queue.c
 
 SOURCE_DIR := source
 TEST_DIR := source/tests
@@ -9,12 +7,6 @@ BUILD_DIR := build
 
 OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SOURCES))
 TEST_OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
-
-
-TEST_SOURCES := main_tests.c door.c door_tests.c 
-
-TEST_OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
-
 
 DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 
