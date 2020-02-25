@@ -36,10 +36,6 @@ test: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 
-tests: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-
 $(BUILD_DIR) :
 	mkdir -p $@/driver
 
