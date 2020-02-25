@@ -24,7 +24,7 @@ void door_request_open_and_autoclose() {
 }
 
 void door_update() {
-    if (doorIsOpen()) {
+    if (door_is_open()) {
         if (hardware_read_obstruction_signal()) {
             m_door_last_close_request_time = time(NULL);
         }
