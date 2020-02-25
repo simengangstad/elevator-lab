@@ -46,9 +46,12 @@ int main() {
     *p_should_clear_orders = false;
     int current_floor = -1;
 
+    HardwareMovement *p_current_movement = malloc(sizeof(HardwareMovement));
+    *p_current_movement = HARDWARE_MOVEMENT_STOP;
+
     // Transition to the start up state so we enter it properly before the main loop, this will just ensure
     // that the code associated with the start up state is executed
-    fsm_transition(UNDEFINED, STARTUP, &p_priority_queue, current_floor);
+    fsm_transition(UNDEFINED, STARTUP, &p_priority_queue, p_current_movement, current_floor);
 
     while (1) {
         State next_state = fsm_decide_next_state(current_state, p_priority_queue, current_floor);
@@ -61,12 +64,12 @@ int main() {
         }
 
         if (next_state != current_state) {
-            fsm_transition(current_state, next_state, &p_priority_queue, current_floor);
+            fsm_transition(current_state, next_state, &p_priority_queue, p_current_movement, current_floor);
             current_state = next_state;
             *p_should_clear_orders = false;
         }
 
-        fsm_state_update(current_state, p_should_clear_orders);
+        fsm_state_update(current_state, current_floor, p_should_clear_orders);
         door_update();
 
         if (!*p_should_clear_orders) {
@@ -86,6 +89,7 @@ int main() {
     }
 
     free(p_should_clear_orders);
+    free(p_current_movement);
 
     return 0;
 }
@@ -156,11 +160,12 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
     return next_state;
 }
 
-void fsm_transition(const State current_state, const State next_state, Node **pp_priority_queue, const int current_floor) {
+void fsm_transition(const State current_state, const State next_state, Node **pp_priority_queue, HardwareMovement *p_current_movement, const int current_floor) {
     // Perform exit for current state
     switch (current_state) {
         case STARTUP:
-            hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+            *p_current_movement = HARDWARE_MOVEMENT_STOP;
+            hardware_command_movement(*p_current_movement);
             break;
 
         case IDLE:
@@ -168,7 +173,8 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             break;
 
         case MOVE:
-            hardware_command_movement(HARDWARE_MOVEMENT_STOP);
+            *p_current_movement = HARDWARE_MOVEMENT_STOP;
+            hardware_command_movement(*p_current_movement);
             break;
 
         case DOOR_OPEN:
@@ -201,7 +207,8 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             }
 
             if (!is_at_floor) {
-                hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
+                *p_current_movement = HARDWARE_MOVEMENT_DOWN;
+                hardware_command_movement(*p_current_movement);
             }
         } break;
 
@@ -212,8 +219,9 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
         case MOVE: {
             // TODO: what happens if we order to the current floor, where will it go? Add
             //       direction
-            HardwareMovement direction = (*pp_priority_queue)->floor < current_floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
-            hardware_command_movement(direction);
+
+            *p_current_movement = (*pp_priority_queue)->floor < current_floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            hardware_command_movement(*p_current_movement);
         } break;
 
         case DOOR_OPEN:
@@ -221,7 +229,6 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
                 hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
             }
 
-            hardware_command_floor_indicator_on((*pp_priority_queue)->floor);
             door_request_open_and_autoclose();
             *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
 
@@ -237,7 +244,7 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
     }
 }
 
-void fsm_state_update(const State current_state, bool *p_should_clear_orders) {
+void fsm_state_update(const State current_state, const int current_floor, bool *p_should_clear_orders) {
     switch (current_state) {
         case STARTUP:
             *p_should_clear_orders = true;
@@ -248,6 +255,7 @@ void fsm_state_update(const State current_state, bool *p_should_clear_orders) {
             break;
 
         case MOVE:
+            hardware_command_floor_indicator_on(current_floor);
             // No update
             break;
 
