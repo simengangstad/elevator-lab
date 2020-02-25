@@ -5,6 +5,7 @@
 
 #ifndef DOOR_H
 #define DOOR_H
+#define DOOR_OPEN_TIME_INTERVAL 3.0
 
 #include <stdbool.h>
 #include <time.h>
