@@ -35,7 +35,7 @@ endif
 elevator : $(OBJ) | $(DRIVER_ARCHIVE)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-tests: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
+test: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 
