@@ -15,7 +15,7 @@
  * @brief Will open the door and close it after a number of seconds specified 
  *        by #DOOR_OPEN_TIME_INTERVAL.
  */
-void doorRequestOpenAndAutoclose();
+void door_request_open_and_autoclose();
 
 /**
  * @brief Updates the timer and checks whether we should close the door (which happens 
@@ -24,11 +24,11 @@ void doorRequestOpenAndAutoclose();
  * @note If there is an obstruction the timer will be reset and the door will try to close
  *       again after #DOOR_OPEN_TIME_INTERVAL.
  */
-void doorUpdate();
+void door_update();
 
 /**
  * @return Whether the door is open.
  */
-bool doorIsOpen();
+bool door_is_open();
 
 #endif

@@ -10,34 +10,34 @@
  * 
  * @note This time will be reset to the current time if there occurs an obstruction.
  */
-static time_t globalDoorLastCloseRequestTime;
+static time_t m_door_last_close_request_time;
 
 /**
  * @brief Tracks whether the door is open or not. 
  */
-static bool globalDoorIsCurrentlyOpen = false;
+static bool m_door_is_currenty_open = false;
 
-void doorRequestOpenAndAutoclose() {
-    globalDoorLastCloseRequestTime = time(NULL);
+void door_request_open_and_autoclose() {
+    m_door_last_close_request_time = time(NULL);
     hardware_command_door_open(1);
-    globalDoorIsCurrentlyOpen = true;
+    m_door_is_currenty_open = true;
 }
 
-void doorUpdate() {
+void door_update() {
     if (doorIsOpen()) {
         if (hardware_read_obstruction_signal()) {
-            globalDoorLastCloseRequestTime = time(NULL);
+            m_door_last_close_request_time = time(NULL);
         }
 
-        const time_t interval = time(NULL) - globalDoorLastCloseRequestTime;
+        const time_t interval = time(NULL) - m_door_last_close_request_time;
 
         if (interval >= DOOR_OPEN_TIME_INTERVAL) {
             hardware_command_door_open(0);
-            globalDoorIsCurrentlyOpen = false;
+            m_door_is_currenty_open = false;
         }
     }
 }
 
-bool doorIsOpen() {
-    return globalDoorIsCurrentlyOpen;
+bool door_is_open() {
+    return m_door_is_currenty_open;
 }
