@@ -37,46 +37,46 @@ Node* node_create(const int floor, const HardwareOrder direction);
  * @brief Adds an order based on a prioritation algorithm. If the queue contains duplicate orders, the lowest priority is deleted.
  *
  * @param[in] p_new_node Pointer to the order to add to the queue.
- * @param[in] p_first_node Pointer to the first order in the queue.
+ * @param[in] p_first_node_of_queue Pointer to the first order in the queue.
  * @param[in] current_floor Current floor.
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_node if @p p_new_node is NULL.
  */
-Node* queue_add_node(Node* p_new_node, const Node* p_first_node, const int current_floor);
+Node* queue_add_node(Node* p_new_node, const Node* p_first_node_of_queue, const int current_floor);
 
 /**
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
  *
- * @param[in] p_first_node Pointer to the first order in the queue.
+ * @param[in] p_first_node_of_queue Pointer to the first order in the queue.
  * @param[in] current_floor Current floor of the elevator.
  *
  * @return Pointer to the second order in the queue.
  */
-Node* queue_pop(Node* p_first_node, const int current_floor);
+Node* queue_pop(Node* p_first_node_of_queue, const int current_floor);
 
 /**
  * @brief Removes every order in the queue.
  *
- * @param[in] p_first_node Pointer to the first order in the queue.
+ * @param[in] p_first_node_of_queue Pointer to the first order in the queue.
  * 
  * @return The new queue, will just return a null pointer.
  */
-Node* queue_clear(Node* p_first_node);
+Node* queue_clear(Node* p_first_node_of_queue);
 
 /**
  * @brief Returns true if the queue is empty.
  *
- * @param[in] p_first_node Pointer to the first order in the queue.
+ * @param[in] p_first_node_of_queue Pointer to the first order in the queue.
  *
  * @return True if the queue is empty.
  */
-bool queue_is_empty(const Node* p_first_node);
+bool queue_is_empty(const Node* p_first_node_of_queue);
 
 /**
  * @brief Prints the queue to terminal, including the order floors and directions.
  *
- * @param[in] p_first_node Pointer to first node in queue.
+ * @param[in] p_first_node_of_queue Pointer to first node in queue.
  */
-void queue_print(Node* p_first_node);
+void queue_print(Node* p_first_node_of_queue);
 
 #endif

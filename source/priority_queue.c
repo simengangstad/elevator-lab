@@ -16,32 +16,31 @@ Node *node_create(const int floor, const HardwareOrder direction) {
     return p_new_node;
 }
 
-Node *queue_add_node(Node *p_new_node, const Node *p_first_node, const int current_floor) {
+Node *queue_add_node(Node *p_new_node, const Node *p_first_node_of_queue, const int current_floor) {
     if (!p_new_node) {
-        return p_first_node;
+        return p_first_node_of_queue;
     }
 
-    Node *p_new_first_node = NULL;
+    Node *p_new_first_node_of_queue = NULL;
 
     // Algorithm for adding node to queue
-    if (queue_is_empty(p_first_node)) {
-        p_new_node->next_node = NULL;
-        p_new_first_node = p_new_node;
+    if (queue_is_empty(p_first_node_of_queue)) {
+        p_new_first_node_of_queue = p_new_node;
     } else {
         // If the new order is on the way to the destination, put it at the top of the queue
-        if (((current_floor < p_new_node->floor && p_new_node->floor < p_first_node->floor) ||
-             (current_floor > p_new_node->floor && p_new_node->floor > p_first_node->floor)) &&
-            (p_new_node->direction == HARDWARE_ORDER_INSIDE || p_new_node->direction == p_first_node->direction)) {
-            p_new_node->next_node = p_first_node;
-            p_new_first_node = p_new_node;
+        if (((current_floor < p_new_node->floor && p_new_node->floor < p_first_node_of_queue->floor) ||
+             (current_floor > p_new_node->floor && p_new_node->floor > p_first_node_of_queue->floor)) &&
+            (p_new_node->direction == HARDWARE_ORDER_INSIDE || p_new_node->direction == p_first_node_of_queue->direction)) {
+            p_new_node->next_node = p_first_node_of_queue;
+            p_new_first_node_of_queue = p_new_node;
         }
         // If the new order is not on the way to the destination, put it at the bottom of the queue
         else {
             p_new_node->next_node = NULL;
-            p_new_first_node = p_first_node;
+            p_new_first_node_of_queue = p_first_node_of_queue;
 
             // Traverse the queue and place the new order at the bottom
-            Node *p_current_node = p_new_first_node;
+            Node *p_current_node = p_new_first_node_of_queue;
             while (p_current_node->next_node) {
                 p_current_node = p_current_node->next_node;
             }
@@ -49,71 +48,71 @@ Node *queue_add_node(Node *p_new_node, const Node *p_first_node, const int curre
         }
 
         // Traverse queue, delete orders to duplicate floors
-        bool orderOnFloor[4] = {false, false, false, false};
-        Node *currentNodePtr = newFirstNodePtr;
-        Node *prevNodePtr = NULL;
+        bool order_on_floor[4] = {false, false, false, false};
+        Node *p_current_node = p_new_first_node_of_queue;
+        Node *p_previous_node = NULL;
 
-        while (currentNodePtr) {
-            if (orderOnFloor[currentNodePtr->floor]) {
-                prevNodePtr->nextNode = currentNodePtr->nextNode;
-                free(currentNodePtr);
-                currentNodePtr = prevNodePtr->nextNode;
+        while (p_current_node) {
+            if (order_on_floor[p_current_node->floor]) {
+                p_previous_node->next_node = p_current_node->next_node;
+                free(p_current_node);
+                p_current_node = p_previous_node->next_node;
             } else {
-                orderOnFloor[currentNodePtr->floor] = true;
-                prevNodePtr = currentNodePtr;
-                currentNodePtr = currentNodePtr->nextNode;
+                order_on_floor[p_current_node->floor] = true;
+                p_previous_node = p_current_node;
+                p_current_node = p_current_node->next_node;
             }
         }
     }
 
-    return newFirstNodePtr;
+    return p_new_first_node_of_queue;
 }
 
-Node *queuePop(Node *firstNodePtr, int currentFloor) {
-    if (!firstNodePtr) {
+Node *queue_pop(Node *p_first_node_of_queue, int current_floor) {
+    if (!p_first_node_of_queue) {
         return NULL;
     }
 
-    if (!firstNodePtr->nextNode) {
+    if (!p_first_node_of_queue->next_node) {
         // TODO: should be unnecessary, test this
-        free(firstNodePtr);
+        free(p_first_node_of_queue);
         return NULL;
     }
 
-    Node *newFirstNodePtr = firstNodePtr->nextNode;
-    free(firstNodePtr);
+    Node *p_new_first_node_of_queue = p_first_node_of_queue->next_node;
+    free(p_first_node_of_queue);
 
-    return newFirstNodePtr;
+    return p_new_first_node_of_queue;
 }
 
-Node *queueClear(Node *firstNodePtr) {
-    Node *traverseNodePtr = firstNodePtr;
-    while (traverseNodePtr) {
-        Node *tempNodePtr = traverseNodePtr;
-        traverseNodePtr = traverseNodePtr->nextNode;
-        free(tempNodePtr);
+Node *queue_clear(Node *p_first_node_of_queue) {
+    Node *p_traverse_node = p_first_node_of_queue;
+    while (p_traverse_node) {
+        Node *p_temp_node = p_traverse_node;
+        p_traverse_node = p_traverse_node->next_node;
+        free(p_temp_node);
     }
 
     return NULL;
 }
 
-bool queueIsEmpty(const Node *firstNodePtr) { return !firstNodePtr; }
+bool queue_is_empty(const Node *p_first_node_of_queue) { return !p_first_node_of_queue; }
 
-void queuePrint(Node *firstNodePtr) {
-    Node *tempNodePtr = firstNodePtr;
+void queue_print(Node *p_first_node_of_queue) {
+    Node *p_temp_node = p_first_node_of_queue;
     int n = 1;
-    while (tempNodePtr) {
+    while (p_temp_node) {
         printf("%i", n);
         printf(". order\n");
-        printf("Pointer address: %p\n", tempNodePtr);
-        printf("Next pointer address: %p\n", tempNodePtr->nextNode);
-        printf("\t Floor: %i", tempNodePtr->floor);
+        printf("Pointer address: %p\n", p_temp_node);
+        printf("Next pointer address: %p\n", p_temp_node->next_node);
+        printf("\t Floor: %i", p_temp_node->floor);
         printf("\n");
-        printf("\t Direction: %i", (int)tempNodePtr->direction);
+        printf("\t Direction: %i", (int)p_temp_node->direction);
         printf("\n");
         n++;
 
-        tempNodePtr = tempNodePtr->nextNode;
+        p_temp_node = p_temp_node->nextNode;
     }
     printf("End of queue\n");
     return;
