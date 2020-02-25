@@ -60,6 +60,6 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
  * @param[in] p_should_clear_orders Makes it possible for states to clear the queue and prevent further enqueuements.
  * 							        This is utilized by the #Startup and #Stop state. 
  */
-void fsmStateUpdate(const State current_state, bool* p_should_clear_orders);
+void fsm_state_update(const State current_state, bool* p_should_clear_orders);
 
 #endif

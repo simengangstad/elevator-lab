@@ -48,44 +48,44 @@ int main() {
 
     // Transition to the start up state so we enter it properly before the main loop, this will just ensure
     // that the code associated with the start up state is executed
-    fsmTransition(UNDEFINED, STARTUP, &p_priority_queue, current_floor);
+    fsm_transition(UNDEFINED, STARTUP, &p_priority_queue, current_floor);
 
     while (1) {
-        State nextState = fsmDecideNextState(currentState, priorityQueue, currentFloor);
+        State next_state = fsm_decide_next_state(current_state, p_priority_queue, current_floor);
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
             if (hardware_read_floor_sensor(floor)) {
-                currentFloor = floor;
+                current_floor = floor;
                 break;
             }
         }
 
-        if (nextState != currentState) {
-            fsmTransition(currentState, nextState, &priorityQueue, currentFloor);
-            currentState = nextState;
-            *shouldClearOrders = false;
+        if (next_state != current_state) {
+            fsm_transition(current_state, next_state, &p_priority_queue, current_floor);
+            current_state = next_state;
+            *p_should_clear_orders = false;
         }
 
-        fsmStateUpdate(currentState, shouldClearOrders);
-        doorUpdate();
+        fsm_state_update(current_state, p_should_clear_orders);
+        door_update();
 
-        if (!*shouldClearOrders) {
-            if (currentFloor != -1) {
+        if (!*p_should_clear_orders) {
+            if (current_floor != -1) {
                 for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                    for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                        if (hardware_read_order(floor, orderType)) {
-                            priorityQueue = queueAddNode(nodeCreate(floor, orderType), priorityQueue, currentFloor);
-                            hardware_command_order_light(floor, orderType, true);
+                    for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                        if (hardware_read_order(floor, order_type)) {
+                            p_priority_queue = queue_add_node(node_create(floor, order_type), p_priority_queue, current_floor);
+                            hardware_command_order_light(floor, order_type, true);
                         }
                     }
                 }
             }
         } else {
-            priorityQueue = queueClear(priorityQueue);
+            p_priority_queue = queue_clear(p_priority_queue);
         }
     }
 
-    free(shouldClearOrders);
+    free(p_should_clear_orders);
 
     return 0;
 }
@@ -156,26 +156,26 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
     return next_state;
 }
 
-void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr, const int currentFloor) {
+void fsm_transition(const State current_state, const State next_state, Node** pp_priority_queue, const int current_floor) {
     // Perform exit for current state
-    switch (currentState) {
-        case Startup:
+    switch (current_state) {
+        case STARTUP:
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             break;
 
-        case Idle:
+        case IDLE:
             // No exit operation
             break;
 
-        case Move:
+        case MOVE:
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             break;
 
-        case DoorOpen:
+        case DOOR_OPEN:
             // No exit
             break;
 
-        case Stop:
+        case STOP:
             hardware_command_stop_light(false);
 
             break;
@@ -185,48 +185,49 @@ void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr,
     }
 
     // Perform enter for next state
-    switch (nextState) {
-        case Startup: {
-            bool isAtFloor = false;
+    switch (next_state) {
+        case STARTUP: {
+            bool is_at_floor = false;
 
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
                 if (hardware_read_floor_sensor(floor)) {
-                    isAtFloor = true;
+                    is_at_floor = true;
                     hardware_command_floor_indicator_on(floor);
                 }
 
-                for (HardwareOrder orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                    hardware_command_order_light(floor, orderType, 0);
+                for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                    hardware_command_order_light(floor, order_type, 0);
                 }
             }
 
-            if (!isAtFloor) {
+            if (!is_at_floor) {
                 hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
             }
         } break;
 
-        case Idle:
+        case IDLE:
             // No enter
             break;
 
-        case Move: {
+        case MOVE: {
             // TODO: what happens if we order to the current floor, where will it go? Add
             //       direction
-            HardwareMovement direction = (*priorityQueuePtr)->floor < currentFloor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            HardwareMovement direction = (*pp_priority_queue)->floor < current_floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
             hardware_command_movement(direction);
         } break;
-        case DoorOpen:
-            for (unsigned int orderType = HARDWARE_ORDER_UP; orderType <= HARDWARE_ORDER_DOWN; orderType++) {
-                hardware_command_order_light((*priorityQueuePtr)->floor, orderType, false);
+
+        case DOOR_OPEN:
+            for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
             }
 
-            hardware_command_floor_indicator_on((*priorityQueuePtr)->floor);
-            doorRequestOpenAndAutoclose();
-            *priorityQueuePtr = queuePop((*priorityQueuePtr), (*priorityQueuePtr)->floor);
+            hardware_command_floor_indicator_on((*pp_priority_queue)->floor);
+            door_request_open_and_autoclose();
+            *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
 
             break;
 
-        case Stop:
+        case STOP:
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             hardware_command_stop_light(true);
             break;
@@ -236,32 +237,32 @@ void fsmTransition(State currentState, State nextState, Node **priorityQueuePtr,
     }
 }
 
-void fsmStateUpdate(State currentState, bool *shouldClearOrders) {
-    switch (currentState) {
-        case Startup:
-            *shouldClearOrders = true;
+void fsm_state_update(const State current_state, bool* p_should_clear_orders) {
+    switch (current_state) {
+        case STARTUP:
+            *p_should_clear_orders = true;
             break;
 
-        case Idle:
+        case IDLE:
             // No Update
             break;
 
-        case Move:
+        case MOVE:
             // No update
             break;
 
-        case DoorOpen:
+        case DOOR_OPEN:
             // No update
             break;
 
-        case Stop: {
+        case STOP: {
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
                 if (hardware_read_floor_sensor(floor)) {
-                    doorRequestOpenAndAutoclose();
+                    door_request_open_and_autoclose();
                 }
             }
 
-            *shouldClearOrders = true;
+            *p_should_clear_orders = true;
         } break;
 
         default:
