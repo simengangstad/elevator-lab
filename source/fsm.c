@@ -144,13 +144,17 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
 
         case STOP: {
             if (!hardware_read_stop_signal()) {
-                next_state = IDLE;
+                if (current_floor == -1) {  // TODO: Fiks denne jallamekken av case 2
+                    next_state = STARTUP;
+                } else {
+                    next_state = IDLE;
+                }
             }
 
-            break;
-
-            default:
         } break;
+
+        default:
+            break;
     }
 
     return next_state;
@@ -235,7 +239,7 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             hardware_command_stop_light(true);
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
                 for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-                    hardware_command_order_light(floor, order_type, 0);
+                    hardware_command_order_light(floor, order_type, false);
                 }
             }
         } break;
