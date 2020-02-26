@@ -218,13 +218,13 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
 
         case MOVE: {
             // TODO: what happens if we order to the current floor, where will it go? Add
-            //       direction
+            //       direction or bool "above"
 
             *p_current_movement = (*pp_priority_queue)->floor < current_floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
             hardware_command_movement(*p_current_movement);
         } break;
 
-        case DOOR_OPEN:
+        case DOOR_OPEN: {
             for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
                 hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
             }
@@ -232,12 +232,17 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             door_request_open_and_autoclose();
             *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
 
-            break;
+        } break;
 
-        case STOP:
+        case STOP: {
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             hardware_command_stop_light(true);
-            break;
+            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                    hardware_command_order_light(floor, order_type, 0);
+                }
+            }
+        } break;
 
         default:
             break;
@@ -264,7 +269,7 @@ void fsm_state_update(const State current_state, const int current_floor, bool *
             break;
 
         case STOP: {
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {  // Nødvendig? Sender jo inn current_floor
                 if (hardware_read_floor_sensor(floor)) {
                     door_request_open_and_autoclose();
                 }
