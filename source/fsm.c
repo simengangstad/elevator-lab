@@ -89,7 +89,7 @@ int main() {
 
         printf("CURRENT STATE: %s", get_state_name(current_state));
         printf("\n");
-        printf("CURRENT FLOOR: %d", current_floor);
+        printf("CURRENT FLOOR: %d", current_floor + 1);
         printf("\n");
         queue_print(p_priority_queue);
         printf("=================\n");
@@ -276,13 +276,13 @@ void fsm_state_update(const State current_state, const int current_floor, bool *
         } break;
 
         case STOP: {
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {  // Nødvendig? Sender jo inn current_floor
+            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
                 if (hardware_read_floor_sensor(floor)) {
                     door_request_open_and_autoclose();
                 }
             }
 
-            *p_should_clear_orders = true;
+            *p_should_clear_orders = true;  // Eneste stedet vi clearer ordre, hvorfor ikke bare gjøre her? Kalle queue_clear? -> unngår å i det hele tatt polle etasjeknapper
         } break;
 
         default:
