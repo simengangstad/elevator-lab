@@ -89,7 +89,7 @@ int main() {
 
         printf("CURRENT STATE: %s", get_state_name(current_state));
         printf("\n");
-        printf("CURRENT FLOOR: %d", current_floor + 1);
+        printf("CURRENT FLOOR: %d", current_floor);
         printf("\n");
         queue_print(p_priority_queue);
         printf("=================\n");
