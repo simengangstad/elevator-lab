@@ -98,8 +98,7 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
     State next_state = current_state;
 
     switch (current_state) {
-        case STARTUP:
-
+        case STARTUP: {
             if (hardware_read_stop_signal()) {
                 next_state = STOP;
             } else {
@@ -110,30 +109,27 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
                 }
             }
 
-            break;
+        } break;
 
-        case IDLE:
-
+        case IDLE: {
             if (hardware_read_stop_signal()) {
                 next_state = STOP;
             } else if (!queue_is_empty(p_priority_queue)) {
                 next_state = MOVE;
             }
 
-            break;
+        } break;
 
-        case MOVE:
-
+        case MOVE: {
             if (hardware_read_stop_signal()) {
                 next_state = STOP;
             } else if (current_floor == p_priority_queue->floor) {
                 next_state = DOOR_OPEN;
             }
 
-            break;
+        } break;
 
-        case DOOR_OPEN:
-
+        case DOOR_OPEN: {
             if (hardware_read_stop_signal()) {
                 next_state = STOP;
             } else if (!door_is_open()) {
@@ -144,17 +140,17 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
                 }
             }
 
-            break;
+        } break;
 
-        case STOP:
+        case STOP: {
             if (!hardware_read_stop_signal()) {
                 next_state = IDLE;
             }
 
             break;
 
-        default:
-            break;
+            default:
+        } break;
     }
 
     return next_state;
@@ -163,28 +159,28 @@ State fsm_decide_next_state(const State current_state, const Node *p_priority_qu
 void fsm_transition(const State current_state, const State next_state, Node **pp_priority_queue, HardwareMovement *p_current_movement, const int current_floor) {
     // Perform exit for current state
     switch (current_state) {
-        case STARTUP:
+        case STARTUP: {
             *p_current_movement = HARDWARE_MOVEMENT_STOP;
             hardware_command_movement(*p_current_movement);
-            break;
+        } break;
 
-        case IDLE:
+        case IDLE: {
             // No exit operation
-            break;
+        } break;
 
-        case MOVE:
+        case MOVE: {
             *p_current_movement = HARDWARE_MOVEMENT_STOP;
             hardware_command_movement(*p_current_movement);
-            break;
+        } break;
 
-        case DOOR_OPEN:
+        case DOOR_OPEN: {
             // No exit
-            break;
+        } break;
 
-        case STOP:
+        case STOP: {
             hardware_command_stop_light(false);
 
-            break;
+        } break;
 
         default:
             break;
@@ -212,9 +208,9 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             }
         } break;
 
-        case IDLE:
+        case IDLE: {
             // No enter
-            break;
+        } break;
 
         case MOVE: {
             // TODO: what happens if we order to the current floor, where will it go? Add
@@ -251,22 +247,22 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
 
 void fsm_state_update(const State current_state, const int current_floor, bool *p_should_clear_orders) {
     switch (current_state) {
-        case STARTUP:
+        case STARTUP: {
             *p_should_clear_orders = true;
-            break;
+        } break;
 
-        case IDLE:
+        case IDLE: {
             // No Update
-            break;
+        } break;
 
-        case MOVE:
+        case MOVE: {
             hardware_command_floor_indicator_on(current_floor);
             // No update
-            break;
+        } break;
 
-        case DOOR_OPEN:
+        case DOOR_OPEN: {
             // No update
-            break;
+        } break;
 
         case STOP: {
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {  // Nødvendig? Sender jo inn current_floor
