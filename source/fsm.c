@@ -173,6 +173,12 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
         case STARTUP: {
             *p_current_movement = HARDWARE_MOVEMENT_STOP;
             hardware_command_movement(*p_current_movement);
+
+            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {  // Helst fjern dette
+                if (hardware_read_floor_sensor(floor)) {
+                    hardware_command_floor_indicator_on(floor);
+                }
+            }
         } break;
 
         case IDLE: {
@@ -203,12 +209,12 @@ void fsm_transition(const State current_state, const State next_state, Node **pp
             bool is_at_floor = false;
 
             for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                if (hardware_read_floor_sensor(floor)) {
+                if (hardware_read_floor_sensor(floor)) {  // Her itererer vi likevel over alle etasjene, hvorfor ikke sette current_floor her? -> Sentralisering av setting av globale var.
                     is_at_floor = true;
                     hardware_command_floor_indicator_on(floor);
                 }
 
-                for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {  // Hvorfor er dette med?
                     hardware_command_order_light(floor, order_type, 0);
                 }
             }
