@@ -114,7 +114,7 @@ static bool door_tests_check_door_is_open_function() {
     return door_opened && door_closed;
 }
 
-void door_test_validate() {
+void door_tests_validate() {
     printf("=========== Starting door tests ===========\n\n");
     printf("Moving elevator to floor...\n\n");
 

@@ -19,6 +19,6 @@
 /**
  * @brief Goes through all the tests specified for the door.
  */
-void door_test_validate();
+void door_tests_validate();
 
 #endif
