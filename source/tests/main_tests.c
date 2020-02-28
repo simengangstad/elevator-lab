@@ -27,9 +27,9 @@ int test() {
 
     signal(SIGINT, sigint_handler);
 
-    doorTestsValidate();
-    fsmTestsValidate();
-    priorityQueueTestsValidate();
+    door_tests_validate();
+    fsm_tests_validate();
+    priority_queue_tests_validate();
 
     return 0;
 }
