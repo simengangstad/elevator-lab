@@ -12,6 +12,6 @@
  * @brief Validates the result of all the tests of PriorityQueue 
  *
  */
-void priorityQueueTestsValidate();
+void priority_queue_tests_validate();
 
 #endif

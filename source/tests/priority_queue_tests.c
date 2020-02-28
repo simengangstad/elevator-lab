@@ -1,172 +1,197 @@
 #include "priority_queue_tests.h"
 
-// TNODE-1
-bool testMakeNode() {
-    int testFloor = 3;
-    HardwareOrder testDirection = HARDWARE_ORDER_UP;
-    Node* testNode = node_create(testFloor, testDirection);
+/**
+ * @brief Checks that node creation is set up correctly. 
+ * 
+ * @note Test TNODE-1
+ * 
+ * @return True if the node got create correctly. 
+ */
+bool priority_queue_tests_check_make_node() {
+    const int test_floor = 3;
+    const HardwareOrder test_direction = HARDWARE_ORDER_UP;
+    Node* test_node = node_create(test_floor, test_direction);
 
-    bool result = (testNode->floor == testFloor && testNode->direction == testDirection && !testNode->next_node);
-    free(testNode);
+    bool result = (test_node->floor == test_floor && test_node->direction == test_direction && !test_node->next_node);
+    free(test_node);
     return result;
 }
 
-void validateMakeNode() {
-    assert(testMakeNode());
-    return;
-}
-
-// TNODE-2
-bool testLinkNodes() {
-    Node* testNodeFirst = node_create(2, HARDWARE_ORDER_DOWN);
-    Node* testNodeSecond = node_create(3, HARDWARE_ORDER_INSIDE);
-    testNodeFirst->next_node = testNodeSecond;
-    bool result = testNodeFirst->next_node == testNodeSecond;
-    free(testNodeFirst);
-    free(testNodeSecond);
+/**
+ * @brief Checks that nodes get linked correctly
+ *
+ * @note Test TNODE-2
+ *  
+ * @return true if the link is correct. 
+ */
+bool priority_queue_tests_check_link_nodes() {
+    Node* test_node_first = node_create(2, HARDWARE_ORDER_DOWN);
+    Node* test_node_second = node_create(3, HARDWARE_ORDER_INSIDE);
+    test_node_first->next_node = test_node_second;
+    bool result = test_node_first->next_node == test_node_second;
+    free(test_node_first);
+    free(test_node_second);
     return result;
 }
 
-void validateLinkNodes() {
-    assert(testLinkNodes());
-    return;
-}
-
-// TNODE-3
-bool testGetFunctions() {
-    int testFloor = 1;
-    HardwareOrder testDirection = HARDWARE_ORDER_UP;
-    Node* testNode = node_create(testFloor, testDirection);
-    int testNodeFloor = testNode->floor;
-    HardwareOrder testNodeDirection = testNode->direction;
-    bool result = testFloor == testNodeFloor && testDirection == testNodeDirection;
-    free(testNode);
+/**
+ * @brief Checks that the functions for getting floor and direction from a node returns the correct result.
+ *
+ * @note Test TNODE-3 
+ *  
+ * @return true If the result of the node match with the input. 
+ */
+bool priority_queue_tests_check_get_function() {
+    int test_floor = 1;
+    HardwareOrder test_direction = HARDWARE_ORDER_UP;
+    Node* test_node = node_create(test_floor, test_direction);
+    bool result = test_floor == test_node->floor && test_direction == test_node->direction;
+    free(test_node);
     return result;
 }
 
-void validateGetFunctions() {
-    assert(testGetFunctions());
-    return;
+/**
+ * @brief Checks a range of cases with creating a queue and adding to it.
+ * 
+ * @note TEST TQUEUE-1
+ */
+void priority_queue_check_queue_creation_and_add() {
+    {
+        const int current_floor = 0;
+        printf("Tests adding-algoritm based on cases\n\n");
+        printf("Case 1: new compatible order between current floor and goal\n");
+        printf("At floor %i", current_floor);
+        printf(" , new order going up from floor 3.\n");
+        Node* first_node = node_create(2, HARDWARE_ORDER_UP);
+        queue_print(first_node);
+        printf("New order from inside to second floor\n");
+        Node* second_node = node_create(1, HARDWARE_ORDER_INSIDE);
+        first_node = queue_add_node(second_node, first_node, current_floor, true);
+        queue_print(first_node);
+        printf("Test successful if new order is placed on top of existing order\n\n");
+        queue_clear(first_node);
+    }
+
+    {
+        const int current_floor = 0;
+        printf("Case 2: new compatible order not between current floor and goal\n\n");
+        printf("At floor %i", current_floor);
+        printf(" , new order going up from floor 3.\n");
+        Node* first_node = node_create(2, HARDWARE_ORDER_UP);
+        queue_print(first_node);
+        printf("New order from inside to fourth floor\n");
+        Node* second_node = node_create(3, HARDWARE_ORDER_INSIDE);
+        first_node = queue_add_node(second_node, first_node, current_floor, true);
+        queue_print(first_node);
+        printf("Test successful if new order is placed below existing order\n\n");
+        queue_clear(first_node);
+    }
+
+    {
+        const int current_floor = 0;
+        printf("Case 3: new incompatible order between current floor and goal\n\n");
+        printf("At floor %i", current_floor);
+        printf(" , new order going up from floor 3.\n");
+        Node* first_node = node_create(2, HARDWARE_ORDER_UP);
+        queue_print(first_node);
+        printf("New order going down from second floor\n");
+        Node* second_node = node_create(1, HARDWARE_ORDER_DOWN);
+        first_node = queue_add_node(second_node, first_node, current_floor, true);
+        queue_print(first_node);
+        printf("Test successful if new order is placed below existing order\n\n");
+        queue_clear(first_node);
+    }
+
+    {
+        const int current_floor = 0;
+        printf("Case 4: deletion of duplicate orders of lower priority\n\n");
+        printf("At floor %i", current_floor);
+        printf(" , new order going up from floor 3.\n");
+        Node* first_node = node_create(2, HARDWARE_ORDER_UP);
+        queue_print(first_node);
+        printf("New order going down from second floor\n");
+        Node* second_node = node_create(1, HARDWARE_ORDER_DOWN);
+        first_node = queue_add_node(second_node, first_node, current_floor, true);
+        queue_print(first_node);
+        printf("New order going up from second floor\n");
+        Node* third_node = node_create(1, HARDWARE_ORDER_UP);
+        first_node = queue_add_node(third_node, first_node, current_floor, true);
+        queue_print(first_node);
+        printf("Test successful if duplicate order is deleted correctly\n\n");
+        queue_clear(first_node);
+    }
 }
 
-// TQUEUE-1
-void testQueueCreationAndAdd() {
-    int currentFloor = 0;
-    printf("Tests adding-algoritm based on cases\n");
-    printf("Case 1: new compatible order between current floor and goal\n");
-    printf("At floor %i", currentFloor);
-    printf(" , new order going up from floor 3.\n");
-    Node* firstNode1 = node_create(2, HARDWARE_ORDER_UP);
-    queue_print(firstNode1);
-    printf("New order from inside to second floor\n");
-    Node* secondNode1 = node_create(1, HARDWARE_ORDER_INSIDE);
-    firstNode1 = queue_add_node(secondNode1, firstNode1, currentFloor, true);
-    queue_print(firstNode1);
-    printf("Test successful if new order is placed on top of existing order\n");
-    queue_clear(firstNode1);
-
-    printf("Case 2: new compatible order not between current floor and goal\n");
-    printf("At floor %i", currentFloor);
-    printf(" , new order going up from floor 3.\n");
-    Node* firstNode2 = node_create(2, HARDWARE_ORDER_UP);
-    queue_print(firstNode2);
-    printf("New order from inside to fourth floor\n");
-    Node* secondNode2 = node_create(3, HARDWARE_ORDER_INSIDE);
-    firstNode2 = queue_add_node(secondNode2, firstNode2, currentFloor, true);
-    queue_print(firstNode2);
-    printf("Test successful if new order is placed below existing order\n");
-    queue_clear(firstNode2);
-
-    printf("Case 3: new incompatible order between current floor and goal\n");
-    printf("At floor %i", currentFloor);
-    printf(" , new order going up from floor 3.\n");
-    Node* firstNode3 = node_create(2, HARDWARE_ORDER_UP);
-    queue_print(firstNode3);
-    printf("New order going down from second floor\n");
-    Node* secondNode3 = node_create(1, HARDWARE_ORDER_DOWN);
-    firstNode3 = queue_add_node(secondNode3, firstNode3, currentFloor, true);
-    queue_print(firstNode3);
-    printf("Test successful if new order is placed below existing order\n");
-    queue_clear(firstNode3);
-
-    printf("Case 4: deletion of duplicate orders of lower priority\n");
-    printf("At floor %i", currentFloor);
-    printf(" , new order going up from floor 3.\n");
-    Node* firstNode4 = node_create(2, HARDWARE_ORDER_UP);
-    queue_print(firstNode4);
-    printf("New order going down from second floor\n");
-    Node* secondNode4 = node_create(1, HARDWARE_ORDER_DOWN);
-    firstNode4 = queue_add_node(secondNode4, firstNode4, currentFloor, true);
-    queue_print(firstNode4);
-    printf("New order going up from second floor\n");
-    Node* thirdNode4 = node_create(1, HARDWARE_ORDER_UP);
-    firstNode4 = queue_add_node(thirdNode4, firstNode4, currentFloor, true);
-    queue_print(firstNode4);
-    printf("Test successful if duplicate order is deleted correctly");
-    queue_clear(firstNode4);
-}
-
-// T_QUEUE2
-void testQueueHelpFunctions() {
-    int currentFloor = 0;
+/**
+ * @brief Will check the helper functions for the queue.
+ * 
+ * @note TEST TQUEUE-2
+ */
+void priority_queue_tests_check_queue_help_functions() {
     printf("Help functions\n");
-    Node* firstNode = node_create(2, HARDWARE_ORDER_UP);
-    firstNode = queue_add_node(node_create(1, HARDWARE_ORDER_INSIDE), firstNode, currentFloor, true);
-    firstNode = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), firstNode, currentFloor, true);
-    printf("Current queue:\n");
-    queue_print(firstNode);
-    printf("Pop first node\n");
-    firstNode = queue_pop(firstNode, currentFloor);
-    printf("Current queue:\n");
-    queue_print(firstNode);
-    printf("Test successful if first order is removed and remaining orders are unchanged\n");
-    queue_clear(firstNode);
 
-    currentFloor = 1;
-    Node* firstNode2 = node_create(1, HARDWARE_ORDER_UP);
-    firstNode2 = queue_add_node(node_create(3, HARDWARE_ORDER_UP), firstNode2, currentFloor, true);
-    firstNode2 = queue_add_node(node_create(2, HARDWARE_ORDER_INSIDE), firstNode2, currentFloor, true);
-    printf("Current queue:\n");
-    queue_print(firstNode2);
+    {
+        const int current_floor = 0;
+        Node* first_node = node_create(2, HARDWARE_ORDER_UP);
+        first_node = queue_add_node(node_create(1, HARDWARE_ORDER_INSIDE), first_node, current_floor, true);
+        first_node = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), first_node, current_floor, true);
+        printf("Current queue:\n");
+        queue_print(first_node);
+        printf("Pop first node\n");
+        first_node = queue_pop(first_node, current_floor);
+        printf("Current queue:\n");
+        queue_print(first_node);
+        printf("Test successful if first order is removed and remaining orders are unchanged\n\n");
+        queue_clear(first_node);
+    }
 
-    printf("Pop first node\n");
-    firstNode2 = queue_pop(firstNode2, currentFloor);
-    printf("Current queue:\n");
-    queue_print(firstNode2);
-    printf("Test successful if first order is removed and remaining orders are shuffled\n");
-    queue_clear(firstNode2);
+    {
+        const int current_floor = 1;
+        Node* first_node = node_create(1, HARDWARE_ORDER_UP);
+        first_node = queue_add_node(node_create(3, HARDWARE_ORDER_UP), first_node, current_floor, true);
+        first_node = queue_add_node(node_create(2, HARDWARE_ORDER_INSIDE), first_node, current_floor, true);
+        printf("Current queue:\n");
+        queue_print(first_node);
 
-    Node* firstNode3 = NULL;
-    printf("Test successful if expression returns true: %i", queue_is_empty(firstNode3));
-    printf("\n");
-    queue_clear(firstNode3);
+        printf("Pop first node\n");
+        first_node = queue_pop(first_node, current_floor);
+        printf("Current queue:\n");
+        queue_print(first_node);
+        printf("Test successful if first order is removed and remaining orders are shuffled\n\n");
+        queue_clear(first_node);
+    }
+
+    {
+        Node* first_node = NULL;
+        printf("Test successful if expression returns true: %i\n\n", queue_is_empty(first_node));
+    }
 
     return;
 }
 
-void priorityQueueTestsValidate() {
+void priority_queue_tests_validate() {
     printf("=========== Starting Queue tests ===========\n\n");
     printf("Test 1: Test that makeNode() works\n");
-    assert(testMakeNode());
+    assert(priority_queue_tests_check_make_node());
     printf("Test 1 succesful if passed to here.\n");
     printf("\n");
 
     printf("Test 2: Test that linking nodes works\n");
-    assert(testLinkNodes());
+    assert(priority_queue_tests_check_link_nodes());
     printf("Test 2 succesful if passed to here.\n");
     printf("\n");
 
     printf("Test 3: Test that get-functions work\n");
-    assert(testGetFunctions());
+    assert(priority_queue_tests_check_get_function());
     printf("Test 3 succesful if passed to here.\n");
     printf("\n");
 
     printf("Test 4: Testing creation of queue and adding nodes\n");
-    testQueueCreationAndAdd();
+    priority_queue_check_queue_creation_and_add();
     printf("\n");
 
     printf("Test 5: Testing queue help-functions\n");
-    testQueueHelpFunctions();
+    priority_queue_tests_check_queue_help_functions();
     printf("\n");
 
     printf("================== Queue test complete =================\n");
