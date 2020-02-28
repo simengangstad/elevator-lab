@@ -223,7 +223,12 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
 
         case STATE_STOP: {
             if (!hardware_read_stop_signal()) {
-                next_state = STATE_IDLE;
+                if (door_is_open()) {
+                    next_state = STATE_DOOR_OPEN;       // Potensielt problem: door_open sine enter-greier
+                }
+                else {
+                    next_state = STATE_IDLE;
+                }
             }
 
         } break;
@@ -308,12 +313,14 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
         } break;
 
         case STATE_DOOR_OPEN: {
-            for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-                hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
+            if (!queue_is_empty(*pp_priority_queue)) {
+                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                    hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
+                }
+                *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
             }
-
             door_request_open_and_autoclose();
-            *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
+            
 
         } break;
 
