@@ -12,7 +12,7 @@ const char* get_movement_name(const HardwareMovement movement);
 
 const char* get_floor_offset(const Offset offset);
 
-// TODO: IS this at bit to unreadable?
+// TODO: IS this at bit to gtunreadable?
 
 /**
  * @brief Checks if the elevator is currently at a floor.
@@ -85,6 +85,9 @@ int main() {
         queue_print(p_priority_queue);
         printf("=================\n");
     }
+
+    queue_clear(p_priority_queue);
+    free(p_movement_when_left_floor);
 
     return 0;
 }
