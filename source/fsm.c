@@ -10,6 +10,8 @@ const char* get_state_name(const State state);
 
 const char* get_movement_name(const HardwareMovement movement);
 
+const char* get_floor_offset(const Offset offset);
+
 // TODO: IS this at bit to unreadable?
 
 /**
@@ -25,11 +27,11 @@ static bool fsm_elevator_is_at_floor(int* current_floor);
  * @brief Checks where the elevator is given @p movement.
  * 
  * @param [in] last_floor The floor the elevator was last recorded to be at.
- * @param [in] movement The current movement of the elevator.
+ * @param [in] movement_when_left_floor The movement from the floor the initial order came from. 
  * 
  * @return The position of the elevator.
  */
-static Position fsm_decide_position(const int last_floor, const HardwareMovement movement);
+static Position fsm_decide_position(const int last_floor, const HardwareMovement movement_when_left_floor);
 
 /**
  * @brief Polls the current orders and puts them in the @p p_priority_queue.
@@ -55,11 +57,11 @@ int main() {
     int last_floor = FLOOR_UNDEFINED;
     Position current_position = {FLOOR_UNDEFINED, OFFSET_UNDEFINED};
     Node* p_priority_queue = NULL;
-    HardwareMovement* p_last_movement = malloc(sizeof(HardwareMovement));
-    *p_last_movement = HARDWARE_MOVEMENT_STOP;
+    HardwareMovement* p_movement_when_left_floor = malloc(sizeof(HardwareMovement));
+    *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
 
     while (1) {
-        current_position = fsm_decide_position(last_floor, *p_last_movement);
+        current_position = fsm_decide_position(last_floor, *p_movement_when_left_floor);
 
         if (current_position.floor != FLOOR_UNDEFINED && current_position.offset == OFFSET_AT_FLOOR) {
             hardware_command_floor_indicator_on(current_position.floor);
@@ -69,7 +71,7 @@ int main() {
         State next_state = fsm_decide_next_state(current_state, p_priority_queue, current_position);
 
         if (next_state != current_state) {
-            fsm_transition(current_state, next_state, &p_priority_queue, p_last_movement, current_position);
+            fsm_transition(current_state, next_state, &p_priority_queue, p_movement_when_left_floor, current_position);
             current_state = next_state;
         }
 
@@ -78,13 +80,11 @@ int main() {
 
         printf("CURRENT STATE: %s\n", get_state_name(current_state));
         printf("CURRENT FLOOR: %d\n", current_position.floor);
-        printf("LAST MOVEMENT: %s\n", get_movement_name(*p_last_movement));
+        printf("CURRENT OFFSET: %s\n", get_floor_offset(current_position.offset));
+        printf("LAST MOVEMENT: %s\n", get_movement_name(*p_movement_when_left_floor));
         queue_print(p_priority_queue);
         printf("=================\n");
     }
-
-    free(p_last_movement);
-    queue_clear(p_priority_queue);
 
     return 0;
 }
@@ -128,6 +128,19 @@ const char* get_movement_name(const HardwareMovement movement) {
     }
 }
 
+const char* get_floor_offset(const Offset offset) {
+    switch (offset) {
+        case OFFSET_AT_FLOOR:
+            return "At floor";
+        case OFFSET_ABOVE:
+            return "Above";
+        case OFFSET_BELOW:
+            return "Below";
+        default:
+            return "Undefined";
+    }
+}
+
 static bool fsm_elevator_is_at_floor(int* current_floor) {
     for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
         if (hardware_read_floor_sensor(floor)) {
@@ -141,7 +154,7 @@ static bool fsm_elevator_is_at_floor(int* current_floor) {
     return false;
 }
 
-static Position fsm_decide_position(const int last_floor, const HardwareMovement movement) {
+static Position fsm_decide_position(const int last_floor, const HardwareMovement movement_when_left_floor) {
     int new_floor = last_floor;
     Offset offset = OFFSET_UNDEFINED;
 
@@ -151,9 +164,9 @@ static Position fsm_decide_position(const int last_floor, const HardwareMovement
         offset = OFFSET_AT_FLOOR;
     }
 
-    if (offset != OFFSET_AT_FLOOR && movement == HARDWARE_MOVEMENT_DOWN) {
+    if (offset != OFFSET_AT_FLOOR && movement_when_left_floor == HARDWARE_MOVEMENT_DOWN) {
         offset = OFFSET_BELOW;
-    } else if (offset != OFFSET_AT_FLOOR && movement == HARDWARE_MOVEMENT_UP) {
+    } else if (offset != OFFSET_AT_FLOOR && movement_when_left_floor == HARDWARE_MOVEMENT_UP) {
         offset = OFFSET_ABOVE;
     }
 
@@ -164,7 +177,7 @@ static Node* fsm_poll_orders_and_update_queue(Node* p_priority_queue, const Posi
     for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
         for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
             if (hardware_read_order(floor, order_type)) {
-                p_priority_queue = queue_add_node(node_create(floor, order_type), p_priority_queue, current_position.floor);
+                p_priority_queue = queue_add_node(node_create(floor, order_type), p_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
                 hardware_command_order_light(floor, order_type, true);
             }
         }
@@ -187,7 +200,6 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
             } else if (current_position.offset == OFFSET_AT_FLOOR) {
                 next_state = STATE_IDLE;
             }
-
         } break;
 
         case STATE_IDLE: {
@@ -196,7 +208,6 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
             } else if (!queue_is_empty(p_priority_queue)) {
                 next_state = STATE_MOVE;
             }
-
         } break;
 
         case STATE_MOVE: {
@@ -205,7 +216,6 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
             } else if (current_position.floor == p_priority_queue->floor && current_position.offset == OFFSET_AT_FLOOR) {
                 next_state = STATE_DOOR_OPEN;
             }
-
         } break;
 
         case STATE_DOOR_OPEN: {
@@ -218,19 +228,20 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
                     next_state = STATE_MOVE;
                 }
             }
-
         } break;
 
         case STATE_STOP: {
             if (!hardware_read_stop_signal()) {
                 if (door_is_open()) {
-                    next_state = STATE_DOOR_OPEN;       // Potensielt problem: door_open sine enter-greier
-                }
-                else {
-                    next_state = STATE_IDLE;
+                    next_state = STATE_DOOR_OPEN;
+                } else {
+                    if (current_position.floor == FLOOR_UNDEFINED) {
+                        next_state = STATE_STARTUP;
+                    } else {
+                        next_state = STATE_IDLE;
+                    }
                 }
             }
-
         } break;
 
         default:
@@ -240,12 +251,16 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
     return next_state;
 }
 
-void fsm_transition(const State current_state, const State next_state, Node** pp_priority_queue, HardwareMovement* p_last_movement, const Position current_position) {
+void fsm_transition(const State current_state,
+                    const State next_state,
+                    Node** pp_priority_queue,
+                    HardwareMovement* p_movement_when_left_floor,
+                    const Position current_position) {
     // Perform exit for current state
     switch (current_state) {
         case STATE_STARTUP: {
-            *p_last_movement = HARDWARE_MOVEMENT_STOP;
-            hardware_command_movement(*p_last_movement);
+            *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
+            hardware_command_movement(*p_movement_when_left_floor);
         } break;
 
         case STATE_IDLE: {
@@ -262,7 +277,6 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
 
         case STATE_STOP: {
             hardware_command_stop_light(false);
-
         } break;
 
         default:
@@ -286,8 +300,8 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
             }
 
             if (!is_at_floor) {
-                *p_last_movement = HARDWARE_MOVEMENT_DOWN;
-                hardware_command_movement(*p_last_movement);
+                *p_movement_when_left_floor = HARDWARE_MOVEMENT_DOWN;
+                hardware_command_movement(*p_movement_when_left_floor);
             }
         } break;
 
@@ -296,7 +310,7 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
         } break;
 
         case STATE_MOVE: {
-            HardwareMovement new_movement = *p_last_movement;
+            HardwareMovement new_movement = *p_movement_when_left_floor;
             new_movement = (*pp_priority_queue)->floor < current_position.floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
 
             // If we stopped between the floors and order to the current floor we decide direction based
@@ -308,20 +322,14 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
             }
 
             hardware_command_movement(new_movement);
-            *p_last_movement = new_movement;
 
+            if (current_position.offset == OFFSET_AT_FLOOR) {
+                *p_movement_when_left_floor = new_movement;
+            }
         } break;
 
         case STATE_DOOR_OPEN: {
-            if (!queue_is_empty(*pp_priority_queue)) {
-                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-                    hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
-                }
-                *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
-            }
-            door_request_open_and_autoclose();
-            
-
+            // No enter
         } break;
 
         case STATE_STOP: {
@@ -355,6 +363,16 @@ void fsm_state_update(const State current_state, Node** pp_priority_queue, const
 
         case STATE_DOOR_OPEN: {
             *pp_priority_queue = fsm_poll_orders_and_update_queue(*pp_priority_queue, current_position);
+
+            if (!queue_is_empty(*pp_priority_queue) && (*pp_priority_queue)->floor == current_position.floor) {
+                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+                    hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
+                }
+
+                *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
+                door_request_open_and_autoclose();
+            }
+
         } break;
 
         case STATE_STOP: {

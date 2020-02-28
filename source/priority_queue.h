@@ -42,7 +42,7 @@ Node* node_create(const int floor, const HardwareOrder direction);
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_node if @p p_new_node is NULL.
  */
-Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor);
+Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor, const bool is_at_floor);
 
 /**
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
