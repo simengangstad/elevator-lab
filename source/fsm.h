@@ -5,6 +5,7 @@
 
 #ifndef FSM_H
 #define FSM_H
+#define FLOOR_UNDEFINED -1
 
 #include <signal.h>
 #include <stdbool.h>
@@ -73,14 +74,12 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
 
 /**
  * @brief Will execute the update function defined for the @p current_state and update
- * 		  internal state.
+ * 		  internal state and the @p pp_priority_queue.
  * 
  * @param[in] current_state The current state that shall have its update function called. 
- * @param[in] p_should_clear_orders Makes it possible for states to clear the queue and prevent further enqueuements.
- * 							        This is utilized by the #Startup and #Stop state. 
- * @param[in] current_floor The current floor the elevator is at (if the elevator is between floors this
- * 							argument should be the last floor). 
+ * @param[in] pp_priority_queue The queue, makes it possible for the states to update the queue. 
+ * @param[in] current_position The current position the elevator is at. 
  */
-void fsm_state_update(const State current_state, const int current_floor, bool* p_should_clear_orders);
+void fsm_state_update(const State current_state, Node** pp_priority_queue, const Position current_position);
 
 #endif
