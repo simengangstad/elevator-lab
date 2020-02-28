@@ -77,7 +77,6 @@ Node* queue_pop(Node* p_first_node_of_queue, const int current_floor) {
     }
 
     if (!p_first_node_of_queue->next_node) {
-        // TODO: should be unnecessary, test this
         free(p_first_node_of_queue);
         return NULL;
     }
