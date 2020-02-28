@@ -39,10 +39,11 @@ Node* node_create(const int floor, const HardwareOrder direction);
  * @param[in] p_new_node Pointer to the order to add to the queue.
  * @param[in] p_first_node_of_queue Pointer to the first order in the queue.
  * @param[in] current_floor Current floor.
+ * @param[in] is_at_a_floor Whether the elevator is currently at a floor, not between floors.
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_node if @p p_new_node is NULL.
  */
-Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor, const bool is_at_floor);
+Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor, const bool is_at_a_floor);
 
 /**
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.

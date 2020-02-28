@@ -16,7 +16,7 @@ Node* node_create(const int floor, const HardwareOrder direction) {
     return p_new_node;
 }
 
-Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor, const bool at_current_floor) {
+Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int current_floor, const bool is_at_a_floor) {
     if (!p_new_node) {
         return p_first_node_of_queue;
     }
@@ -30,7 +30,8 @@ Node* queue_add_node(Node* p_new_node, Node* p_first_node_of_queue, const int cu
         // If the new order is on the way to the destination, put it at the top of the queue
 
         const bool new_order_is_on_way = (current_floor < p_new_node->floor && p_new_node->floor < p_first_node_of_queue->floor && p_new_node->direction != HARDWARE_ORDER_DOWN) ||
-                                         (current_floor > p_new_node->floor && p_new_node->floor > p_first_node_of_queue->floor && p_new_node->direction != HARDWARE_ORDER_UP) || at_current_floor;
+                                         (current_floor > p_new_node->floor && p_new_node->floor > p_first_node_of_queue->floor && p_new_node->direction != HARDWARE_ORDER_UP) ||
+                                         (is_at_a_floor && (p_new_node->floor == current_floor));
 
         if (new_order_is_on_way) {
             p_new_node->next_node = p_first_node_of_queue;
