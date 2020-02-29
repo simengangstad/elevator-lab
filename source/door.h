@@ -31,6 +31,8 @@ void door_request_open_and_autoclose();
 void door_update();
 
 /**
+ * @brief Indicates whether the door is open or not.
+ * 
  * @return Whether the door is open.
  */
 bool door_is_open();

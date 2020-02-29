@@ -18,8 +18,8 @@ static time_t m_door_last_open_and_autoclose_request_time;
 static bool m_door_is_currenty_open = false;
 
 void door_request_open_and_autoclose() {
-    m_door_last_open_and_autoclose_request_time = time(NULL);
     hardware_command_door_open(1);
+    m_door_last_open_and_autoclose_request_time = time(NULL);
     m_door_is_currenty_open = true;
 }
 
