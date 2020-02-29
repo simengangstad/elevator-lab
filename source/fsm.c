@@ -1,50 +1,90 @@
 /**
- * @brief Implementation of the Finite State Machine
+ * @file
+ * @brief Implementation of the finite state machine
  */
 
 #include "fsm.h"
 
-static void sigint_handler(int sig);
-
-const char* get_state_name(const State state);
-
-const char* get_movement_name(const HardwareMovement movement);
-
-const char* get_floor_offset(const Offset offset);
-
-// TODO: IS this at bit to gtunreadable?
-
 /**
- * @brief Checks if the elevator is currently at a floor.
+ * @brief Gets the floor the elevator is currently at.
  * 
- * @param [out] current_floor Will be overwritten with the floor number if the elevator is at a given floor.
- * 
- * @return True of the elevator is at a floor.
+ * @return The floor number if the elevator is at a floor, #FLOOR_UNDEFINED if else.
  */
-static bool fsm_elevator_is_at_floor(int* current_floor);
+static int fsm_get_current_floor();
+
+// TODO: Hva synes vi om denne? Øker jo til en grad lesbarhet, men kan jo også bare sjekke position.offset == OFFSET_AT_FLOOR
 
 /**
- * @brief Checks where the elevator is given @p movement.
+ * @brief Checks if the elevator is at any floor based on the @p position. 
+ * 
+ * @param [in] position The position of the elevator.
+ * 
+ * @return true if the elevator is at any floor.
+ */
+static bool fsm_elevator_is_at_a_floor(const Position position);
+
+/**
+ * @brief Checks where the elevator is given the @p last_floor and @p movement_when_left_floor.
  * 
  * @param [in] last_floor The floor the elevator was last recorded to be at.
- * @param [in] movement_when_left_floor The movement from the floor the initial order came from. 
+ * @param [in] movement_when_left_floor The movement when the elevator last left a floor. 
  * 
  * @return The position of the elevator.
  */
-static Position fsm_decide_position(const int last_floor, const HardwareMovement movement_when_left_floor);
+static Position fsm_decide_elevator_position(const int last_floor, const HardwareMovement movement_when_left_floor);
 
 /**
- * @brief Polls the current orders and puts them in the @p p_priority_queue.
+ * @brief Clears all the order lights.
+ */
+static void fsm_clear_order_lights();
+
+/**
+ * @brief Polls the current orders and puts them in the @p pp_priority_queue. Updates the order light for the new order(s).
  * 
- * @param [in] p_priority_queue The current queue.
+ * @param [in, out] pp_priority_queue The current queue.
  * @param [in] current_position The position of the elevator, used in the queue algorithm to decide where the new orders
  *                              should be placed.
- * 
- * @return The updated queue.
  */
-static Node* fsm_poll_orders_and_update_queue(Node* p_priority_queue, const Position current_position);
+static void fsm_manage_orders_and_update_queue(Node** pp_priority_queue, const Position current_position);
 
-int main() {
+/**
+ * @brief Checks if the top order in the @p p_priority_queue is at the @p floor.
+ * 
+ * @param [in] p_priority_queue The priority queue to check. 
+ * @param [in] floor The floor to check the top order against. 
+ * 
+ * @return true If the top order is at the @p floor. 
+ */
+static bool fsm_top_order_is_at_current_floor(const Node* p_priority_queue, const int floor);
+
+/**
+ * @brief Clears the top order of the @p pp_priority_queue and turns off the lights for the floor the top
+ *        order is pointing to.
+ * 
+ * @param [in, out] pp_priority_queue The priority queue to clear the top order from. 
+ * 
+ */
+static void fsm_clear_top_order_and_update_order_lights(Node** pp_priority_queue);
+
+/**
+ * @brief Handles signal interrupt from the command line.
+ * 
+ * @param sig The signal.
+ */
+static void sigint_handler(int sig);
+
+/**
+ * @brief Determines if the FSM should continue running.
+ */
+static bool m_should_abort = false;
+
+/**
+ * #################################################################################################################
+ * #####                                       FSM LOGIC                                                       #####
+ * #################################################################################################################
+ */
+
+void fsm_run() {
     int error = hardware_init();
     if (error != 0) {
         fprintf(stderr, "Unable to initialize hardware\n");
@@ -54,16 +94,19 @@ int main() {
     signal(SIGINT, sigint_handler);
 
     State current_state = STATE_UNDEFINED;
+
     int last_floor = FLOOR_UNDEFINED;
     Position current_position = {FLOOR_UNDEFINED, OFFSET_UNDEFINED};
+
     Node* p_priority_queue = NULL;
+
     HardwareMovement* p_movement_when_left_floor = malloc(sizeof(HardwareMovement));
     *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
 
-    while (1) {
-        current_position = fsm_decide_position(last_floor, *p_movement_when_left_floor);
+    while (!m_should_abort) {
+        current_position = fsm_decide_elevator_position(last_floor, *p_movement_when_left_floor);
 
-        if (current_position.floor != FLOOR_UNDEFINED && current_position.offset == OFFSET_AT_FLOOR) {
+        if (fsm_elevator_is_at_a_floor(current_position)) {
             hardware_command_floor_indicator_on(current_position.floor);
             last_floor = current_position.floor;
         }
@@ -77,116 +120,12 @@ int main() {
 
         fsm_state_update(current_state, &p_priority_queue, current_position);
         door_update();
-
-        printf("CURRENT STATE: %s\n", get_state_name(current_state));
-        printf("CURRENT FLOOR: %d\n", current_position.floor);
-        printf("CURRENT OFFSET: %s\n", get_floor_offset(current_position.offset));
-        printf("LAST MOVEMENT: %s\n", get_movement_name(*p_movement_when_left_floor));
-        queue_print(p_priority_queue);
-        printf("=================\n");
     }
 
+    printf("Terminating elevator\n");
     queue_clear(p_priority_queue);
     free(p_movement_when_left_floor);
-
-    return 0;
-}
-
-static void sigint_handler(int sig) {
-    (void)(sig);
-    printf("Terminating elevator\n");
     hardware_command_movement(HARDWARE_MOVEMENT_STOP);
-    exit(0);
-}
-
-const char* get_state_name(const State state) {
-    switch (state) {
-        case STATE_STARTUP:
-            return "Startup";
-        case STATE_IDLE:
-            return "Idle";
-        case STATE_MOVE:
-            return "Move";
-        case STATE_DOOR_OPEN:
-            return "DoorOpen";
-        case STATE_STOP:
-            return "Stop";
-        case STATE_UNDEFINED:
-            return "Undefined";
-        default:
-            return "Not a state";
-    }
-}
-
-const char* get_movement_name(const HardwareMovement movement) {
-    switch (movement) {
-        case HARDWARE_MOVEMENT_UP:
-            return "Up";
-        case HARDWARE_MOVEMENT_STOP:
-            return "Stop";
-        case HARDWARE_MOVEMENT_DOWN:
-            return "Down";
-        default:
-            return "Not a movement";
-    }
-}
-
-const char* get_floor_offset(const Offset offset) {
-    switch (offset) {
-        case OFFSET_AT_FLOOR:
-            return "At floor";
-        case OFFSET_ABOVE:
-            return "Above";
-        case OFFSET_BELOW:
-            return "Below";
-        default:
-            return "Undefined";
-    }
-}
-
-static bool fsm_elevator_is_at_floor(int* current_floor) {
-    for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-        if (hardware_read_floor_sensor(floor)) {
-            *current_floor = floor;
-            return true;
-        }
-    }
-
-    *current_floor = FLOOR_UNDEFINED;
-
-    return false;
-}
-
-static Position fsm_decide_position(const int last_floor, const HardwareMovement movement_when_left_floor) {
-    int new_floor = last_floor;
-    Offset offset = OFFSET_UNDEFINED;
-
-    int current_floor = last_floor;
-    if (fsm_elevator_is_at_floor(&current_floor)) {
-        new_floor = current_floor;
-        offset = OFFSET_AT_FLOOR;
-    }
-
-    if (offset != OFFSET_AT_FLOOR && movement_when_left_floor == HARDWARE_MOVEMENT_DOWN) {
-        offset = OFFSET_BELOW;
-    } else if (offset != OFFSET_AT_FLOOR && movement_when_left_floor == HARDWARE_MOVEMENT_UP) {
-        offset = OFFSET_ABOVE;
-    }
-
-    return (Position){new_floor, offset};
-}
-
-static Node* fsm_poll_orders_and_update_queue(Node* p_priority_queue, const Position current_position) {
-    for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-        for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-            if (hardware_read_order(floor, order_type)) {
-                p_priority_queue = queue_add_node(node_create(floor, order_type), p_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
-                hardware_command_order_light(floor, order_type, true);
-            }
-        }
-    }
-
-    return p_priority_queue;
 }
 
 State fsm_decide_next_state(const State current_state, const Node* p_priority_queue, const Position current_position) {
@@ -200,7 +139,7 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
         case STATE_STARTUP: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (current_position.offset == OFFSET_AT_FLOOR) {
+            } else if (fsm_elevator_is_at_a_floor(current_position)) {
                 next_state = STATE_IDLE;
             }
         } break;
@@ -216,7 +155,7 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
         case STATE_MOVE: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (current_position.floor == p_priority_queue->floor && current_position.offset == OFFSET_AT_FLOOR) {
+            } else if (p_priority_queue->floor == fsm_get_current_floor()) {
                 next_state = STATE_DOOR_OPEN;
             }
         } break;
@@ -224,12 +163,10 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
         case STATE_DOOR_OPEN: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (!door_is_open()) {
-                if (queue_is_empty(p_priority_queue)) {
-                    next_state = STATE_IDLE;
-                } else {
-                    next_state = STATE_MOVE;
-                }
+            } else if (!door_is_open() && queue_is_empty(p_priority_queue)) {
+                next_state = STATE_IDLE;
+            } else if (!door_is_open() && !queue_is_empty(p_priority_queue)) {
+                next_state = STATE_MOVE;
             }
         } break;
 
@@ -237,18 +174,13 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
             if (!hardware_read_stop_signal()) {
                 if (door_is_open()) {
                     next_state = STATE_DOOR_OPEN;
-                } else {
-                    if (current_position.floor == FLOOR_UNDEFINED) {
-                        next_state = STATE_STARTUP;
-                    } else {
-                        next_state = STATE_IDLE;
-                    }
+                } else if (!door_is_open() && current_position.floor == FLOOR_UNDEFINED) {
+                    next_state = STATE_STARTUP;
+                } else if (!door_is_open() && current_position.floor != FLOOR_UNDEFINED) {
+                    next_state = STATE_IDLE;
                 }
             }
         } break;
-
-        default:
-            break;
     }
 
     return next_state;
@@ -262,8 +194,7 @@ void fsm_transition(const State current_state,
     // Perform exit for current state
     switch (current_state) {
         case STATE_STARTUP: {
-            *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
-            hardware_command_movement(*p_movement_when_left_floor);
+            hardware_command_movement(HARDWARE_MOVEMENT_STOP);
         } break;
 
         case STATE_IDLE: {
@@ -289,22 +220,11 @@ void fsm_transition(const State current_state,
     // Perform enter for next state
     switch (next_state) {
         case STATE_STARTUP: {
-            bool is_at_floor = false;
+            // TODO: Is this necessary?
+            fsm_clear_order_lights();
 
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                if (hardware_read_floor_sensor(floor)) {  // Her itererer vi likevel over alle etasjene, hvorfor ikke sette current_floor her? -> Sentralisering av setting av globale var.
-                    is_at_floor = true;
-                }
-
-                // Clear all existing order lights
-                for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {  // Hvorfor er dette med?
-                    hardware_command_order_light(floor, order_type, 0);
-                }
-            }
-
-            if (!is_at_floor) {
-                *p_movement_when_left_floor = HARDWARE_MOVEMENT_DOWN;
-                hardware_command_movement(*p_movement_when_left_floor);
+            if (!fsm_elevator_is_at_a_floor(current_position)) {
+                hardware_command_movement(HARDWARE_MOVEMENT_DOWN);
             }
         } break;
 
@@ -313,20 +233,20 @@ void fsm_transition(const State current_state,
         } break;
 
         case STATE_MOVE: {
-            HardwareMovement new_movement = *p_movement_when_left_floor;
-            new_movement = (*pp_priority_queue)->floor < current_position.floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
+            HardwareMovement new_movement = (*pp_priority_queue)->floor < current_position.floor ? HARDWARE_MOVEMENT_DOWN : HARDWARE_MOVEMENT_UP;
 
-            // If we stopped between the floors and order to the current floor we decide direction based
-            // on the previous direction
-            if (current_position.offset == OFFSET_BELOW && (*pp_priority_queue)->floor == current_position.floor) {
+            // If we stopped between floors and order to the current floor we decide movement based
+            // on the elevators offset to the current floor
+            if ((*pp_priority_queue)->floor == current_position.floor && current_position.offset == OFFSET_BELOW) {
                 new_movement = HARDWARE_MOVEMENT_UP;
-            } else if (current_position.offset == OFFSET_ABOVE && (*pp_priority_queue)->floor == current_position.floor) {
+            } else if ((*pp_priority_queue)->floor == current_position.floor && current_position.offset == OFFSET_ABOVE) {
                 new_movement = HARDWARE_MOVEMENT_DOWN;
             }
 
             hardware_command_movement(new_movement);
 
-            if (current_position.offset == OFFSET_AT_FLOOR) {
+            // Only update the movement when the elevator is at a floor and leaving
+            if (fsm_elevator_is_at_a_floor(current_position)) {
                 *p_movement_when_left_floor = new_movement;
             }
         } break;
@@ -338,11 +258,8 @@ void fsm_transition(const State current_state,
         case STATE_STOP: {
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             hardware_command_stop_light(true);
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-                    hardware_command_order_light(floor, order_type, false);
-                }
-            }
+            fsm_clear_order_lights();
+            *pp_priority_queue = queue_clear(*pp_priority_queue);
         } break;
 
         default:
@@ -353,43 +270,122 @@ void fsm_transition(const State current_state,
 void fsm_state_update(const State current_state, Node** pp_priority_queue, const Position current_position) {
     switch (current_state) {
         case STATE_STARTUP: {
-            *pp_priority_queue = queue_clear(*pp_priority_queue);
+            // No update
         } break;
 
         case STATE_IDLE: {
-            *pp_priority_queue = fsm_poll_orders_and_update_queue(*pp_priority_queue, current_position);
+            fsm_manage_orders_and_update_queue(pp_priority_queue, current_position);
         } break;
 
         case STATE_MOVE: {
-            *pp_priority_queue = fsm_poll_orders_and_update_queue(*pp_priority_queue, current_position);
+            fsm_manage_orders_and_update_queue(pp_priority_queue, current_position);
         } break;
 
         case STATE_DOOR_OPEN: {
-            *pp_priority_queue = fsm_poll_orders_and_update_queue(*pp_priority_queue, current_position);
+            fsm_manage_orders_and_update_queue(pp_priority_queue, current_position);
 
-            if (!queue_is_empty(*pp_priority_queue) && (*pp_priority_queue)->floor == current_position.floor) {
-                for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
-                    hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
-                }
-
-                *pp_priority_queue = queue_pop((*pp_priority_queue), (*pp_priority_queue)->floor);
+            if (fsm_top_order_is_at_current_floor(*pp_priority_queue, current_position.floor)) {
+                fsm_clear_top_order_and_update_order_lights(pp_priority_queue);
                 door_request_open_and_autoclose();
             }
 
         } break;
 
         case STATE_STOP: {
-            for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
-                if (hardware_read_floor_sensor(floor)) {
-                    door_request_open_and_autoclose();
-                }
+            if (fsm_elevator_is_at_a_floor(current_position)) {
+                door_request_open_and_autoclose();
             }
-
-            *pp_priority_queue = queue_clear(*pp_priority_queue);
         } break;
 
         default:
             break;
     }
     return;
+}
+
+/**
+ * #################################################################################################################
+ * #####                                       FLOOR & POSITION LOGIC                                          #####
+ * #################################################################################################################
+ */
+
+static int fsm_get_current_floor() {
+    for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+        if (hardware_read_floor_sensor(floor)) {
+            return floor;
+        }
+    }
+
+    return FLOOR_UNDEFINED;
+}
+
+static bool fsm_elevator_is_at_a_floor(const Position position) {
+    return position.offset == OFFSET_AT_FLOOR;
+}
+
+static Position fsm_decide_elevator_position(const int last_floor, const HardwareMovement movement_when_left_floor) {
+    int new_floor = last_floor;
+    Offset offset = OFFSET_UNDEFINED;
+
+    const int current_floor = fsm_get_current_floor();
+    if (current_floor != FLOOR_UNDEFINED) {
+        new_floor = fsm_get_current_floor();
+        offset = OFFSET_AT_FLOOR;
+    }
+
+    if (offset == OFFSET_UNDEFINED && movement_when_left_floor == HARDWARE_MOVEMENT_DOWN) {
+        offset = OFFSET_BELOW;
+    } else if (offset == OFFSET_UNDEFINED && movement_when_left_floor == HARDWARE_MOVEMENT_UP) {
+        offset = OFFSET_ABOVE;
+    }
+
+    return (Position){new_floor, offset};
+}
+
+/**
+ * #################################################################################################################
+ * #####                                       ORDERS                                                          #####
+ * #################################################################################################################
+ */
+
+static void fsm_clear_order_lights() {
+    for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+        for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+            hardware_command_order_light(floor, order_type, false);
+        }
+    }
+}
+
+static void fsm_manage_orders_and_update_queue(Node** pp_priority_queue, const Position current_position) {
+    for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
+        for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+            if (hardware_read_order(floor, order_type)) {
+                *pp_priority_queue = queue_add_node(node_create(floor, order_type), *pp_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
+                hardware_command_order_light(floor, order_type, true);
+            }
+        }
+    }
+}
+
+static bool fsm_top_order_is_at_current_floor(const Node* p_priority_queue, const int floor) {
+    return !queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
+}
+
+static void fsm_clear_top_order_and_update_order_lights(Node** pp_priority_queue) {
+    for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
+        hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
+    }
+
+    *pp_priority_queue = queue_pop(*pp_priority_queue, (*pp_priority_queue)->floor);
+}
+
+/**
+ * #################################################################################################################
+ * #####                                       INTERRUPTS                                                      #####
+ * #################################################################################################################
+ */
+
+static void sigint_handler(int sig) {
+    (void)(sig);
+    m_should_abort = true;
 }
