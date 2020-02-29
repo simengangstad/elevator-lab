@@ -78,7 +78,7 @@ void fsm_run();
  * 
  * @return Next state in the FSM based on @p current_state, @p priority_queue, @p current_position and hardware input.
  */
-State fsm_decide_next_state(const State current_state, const Node* p_priority_queue, const Position current_position);
+State fsm_decide_next_state(const State current_state, const Order* p_priority_queue, const Position current_position);
 
 /**
  * @brief Handles transitioning between two states, @p current_state and @p next_state. Will execute the exit operations for @p current_state 
@@ -91,7 +91,7 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
  * @param[in, out] p_movement_when_left_floor The movement the elevator was set to when it left from the last floor. 
  * @param[in] current_position The current position of the elevator. 
  */
-void fsm_transition(const State current_state, const State next_state, Node** pp_priority_queue, HardwareMovement* p_movement_when_left_floor, const Position current_position);
+void fsm_transition(const State current_state, const State next_state, Order** pp_priority_queue, HardwareMovement* p_movement_when_left_floor, const Position current_position);
 
 /**
  * @brief Will execute the update function defined for the @p current_state and update
@@ -101,6 +101,6 @@ void fsm_transition(const State current_state, const State next_state, Node** pp
  * @param[in, out] pp_priority_queue The queue, makes it possible for the states to update the queue. 
  * @param[in] current_position The current position of the elevator. 
  */
-void fsm_state_update(const State current_state, Node** pp_priority_queue, const Position current_position);
+void fsm_state_update(const State current_state, Order** pp_priority_queue, const Position current_position);
 
 #endif

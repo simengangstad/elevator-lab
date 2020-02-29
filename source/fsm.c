@@ -45,7 +45,7 @@ static void fsm_clear_order_lights();
  * @param [in] current_position The position of the elevator, used in the queue algorithm to decide where the new orders
  *                              should be placed.
  */
-static void fsm_manage_orders_and_update_queue(Node** pp_priority_queue, const Position current_position);
+static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const Position current_position);
 
 /**
  * @brief Checks if the top order in the @p p_priority_queue is at the @p floor.
@@ -55,7 +55,7 @@ static void fsm_manage_orders_and_update_queue(Node** pp_priority_queue, const P
  * 
  * @return true If the top order is at the @p floor. 
  */
-static bool fsm_top_order_is_at_current_floor(const Node* p_priority_queue, const int floor);
+static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, const int floor);
 
 /**
  * @brief Clears the top order of the @p pp_priority_queue and turns off the lights for the floor the top
@@ -64,7 +64,7 @@ static bool fsm_top_order_is_at_current_floor(const Node* p_priority_queue, cons
  * @param [in, out] pp_priority_queue The priority queue to clear the top order from. 
  * 
  */
-static void fsm_clear_top_order_and_update_order_lights(Node** pp_priority_queue);
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue);
 
 /**
  * @brief Handles signal interrupt from the command line.
@@ -98,7 +98,7 @@ void fsm_run() {
     int last_floor = FLOOR_UNDEFINED;
     Position current_position = {FLOOR_UNDEFINED, OFFSET_UNDEFINED};
 
-    Node* p_priority_queue = NULL;
+    Order* p_priority_queue = NULL;
 
     HardwareMovement* p_movement_when_left_floor = malloc(sizeof(HardwareMovement));
     *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
@@ -128,7 +128,7 @@ void fsm_run() {
     hardware_command_movement(HARDWARE_MOVEMENT_STOP);
 }
 
-State fsm_decide_next_state(const State current_state, const Node* p_priority_queue, const Position current_position) {
+State fsm_decide_next_state(const State current_state, const Order* p_priority_queue, const Position current_position) {
     State next_state = current_state;
 
     switch (current_state) {
@@ -188,7 +188,7 @@ State fsm_decide_next_state(const State current_state, const Node* p_priority_qu
 
 void fsm_transition(const State current_state,
                     const State next_state,
-                    Node** pp_priority_queue,
+                    Order** pp_priority_queue,
                     HardwareMovement* p_movement_when_left_floor,
                     const Position current_position) {
     // Perform exit for current state
@@ -267,7 +267,7 @@ void fsm_transition(const State current_state,
     }
 }
 
-void fsm_state_update(const State current_state, Node** pp_priority_queue, const Position current_position) {
+void fsm_state_update(const State current_state, Order** pp_priority_queue, const Position current_position) {
     switch (current_state) {
         case STATE_STARTUP: {
             // No update
@@ -356,22 +356,22 @@ static void fsm_clear_order_lights() {
     }
 }
 
-static void fsm_manage_orders_and_update_queue(Node** pp_priority_queue, const Position current_position) {
+static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const Position current_position) {
     for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
         for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
             if (hardware_read_order(floor, order_type)) {
-                *pp_priority_queue = queue_add_node(node_create(floor, order_type), *pp_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
+                *pp_priority_queue = queue_add_order(order_create(floor, order_type), *pp_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
                 hardware_command_order_light(floor, order_type, true);
             }
         }
     }
 }
 
-static bool fsm_top_order_is_at_current_floor(const Node* p_priority_queue, const int floor) {
+static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, const int floor) {
     return !queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
 }
 
-static void fsm_clear_top_order_and_update_order_lights(Node** pp_priority_queue) {
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue) {
     for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
         hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
     }

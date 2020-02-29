@@ -62,7 +62,7 @@ static bool fsm_tests_check_transtion_requirements() {
             }
         }
 
-        Node* priority_queue = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), NULL, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
+        Order* priority_queue = queue_add_order(order_create(3, HARDWARE_ORDER_DOWN), NULL, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
 
         state = fsm_decide_next_state(state, priority_queue, current_position);
 
@@ -81,11 +81,11 @@ static bool fsm_tests_check_transtion_requirements() {
         printf("Testing transition from move to door open.\n");
         State state = STATE_MOVE;
         Position current_position = {-1, OFFSET_AT_FLOOR};
-        Node* priority_queue = NULL;
+        Order* priority_queue = NULL;
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
             if (hardware_read_floor_sensor(floor)) {
-                priority_queue = queue_add_node(node_create(3, HARDWARE_ORDER_DOWN), priority_queue, floor, current_position.offset == OFFSET_AT_FLOOR);
+                priority_queue = queue_add_order(order_create(3, HARDWARE_ORDER_DOWN), priority_queue, floor, current_position.offset == OFFSET_AT_FLOOR);
                 current_position.floor = floor;
                 break;
             }
@@ -127,7 +127,7 @@ static bool fsm_tests_check_transtion_requirements() {
         // door is closed and that the  queue is not empty
         printf("Testing transition from door open to move.\n");
         State state = STATE_DOOR_OPEN;
-        Node* priority_queue = queue_add_node(node_create(0, HARDWARE_ORDER_DOWN), NULL, 1, true);
+        Order* priority_queue = queue_add_order(order_create(0, HARDWARE_ORDER_DOWN), NULL, 1, true);
         hardware_command_door_open(0);
 
         state = fsm_decide_next_state(state, priority_queue, (Position){3, OFFSET_AT_FLOOR});
