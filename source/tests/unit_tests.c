@@ -1,16 +1,16 @@
 /**
- * @file
- * @brief Entry testing for module testing.
+ * @file 
+ * 
+ * @brief Implementation of the unit tests checks.
  */
 
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "../hardware.h"
-#include "door_tests.h"
-#include "fsm_tests.h"
-#include "priority_queue_tests.h"
+#include "unit_tests.h"
 
+/**
+ * @brief Handles interrupts from the command line.
+ * 
+ * @param sig The signal. 
+ */
 static void sigint_handler(int sig) {
     (void)(sig);
     printf("Terminating elevator\n");
@@ -18,7 +18,7 @@ static void sigint_handler(int sig) {
     exit(0);
 }
 
-int test() {
+void unit_tests_check() {
     int error = hardware_init();
     if (error != 0) {
         fprintf(stderr, "Unable to initialize hardware\n");
@@ -30,6 +30,4 @@ int test() {
     door_tests_validate();
     fsm_tests_validate();
     priority_queue_tests_validate();
-
-    return 0;
 }
