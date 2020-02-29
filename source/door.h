@@ -5,6 +5,10 @@
 
 #ifndef DOOR_H
 #define DOOR_H
+
+/**
+ * @brief Specifies how long the door should be open given that there is no obstruction.
+ */
 #define DOOR_OPEN_TIME_INTERVAL 3.0
 
 #include <stdbool.h>
