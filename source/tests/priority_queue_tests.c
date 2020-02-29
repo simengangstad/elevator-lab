@@ -171,28 +171,28 @@ void priority_queue_tests_check_queue_help_functions() {
 
 void priority_queue_tests_validate() {
     printf("=========== Starting Queue tests ===========\n\n");
-    printf("Test 1: Test that makeNode() works\n");
+    printf("1. Test that makeNode() works\n");
     assert(priority_queue_tests_check_make_node());
-    printf("Test 1 succesful if passed to here.\n");
+    printf("1. Passed\n");
     printf("\n");
 
-    printf("Test 2: Test that linking nodes works\n");
+    printf("2. Test that linking nodes works\n");
     assert(priority_queue_tests_check_link_nodes());
-    printf("Test 2 succesful if passed to here.\n");
+    printf("2. Passed\n");
     printf("\n");
 
-    printf("Test 3: Test that get-functions work\n");
+    printf("3. Test that get-functions work\n");
     assert(priority_queue_tests_check_get_function());
-    printf("Test 3 succesful if passed to here.\n");
+    printf("3. Passed\n");
     printf("\n");
 
-    printf("Test 4: Testing creation of queue and adding nodes\n");
+    printf("4. Testing creation of queue and adding nodes\n");
     priority_queue_check_queue_creation_and_add();
-    printf("\n");
+    printf("4. End\n");
 
-    printf("Test 5: Testing queue help-functions\n");
+    printf("5. Testing queue help-functions\n");
     priority_queue_tests_check_queue_help_functions();
-    printf("\n");
+    printf("5. End\n");
 
     printf("================== Queue test complete =================\n");
 
