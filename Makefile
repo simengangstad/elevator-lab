@@ -1,12 +1,14 @@
-SOURCES := fsm.c priority_queue.c door.c
-TEST_SOURCES := main_tests.c test_util.c door.c door_tests.c fsm_tests.c fsm.c priority_queue_tests.c priority_queue.c
+SIM := true
+
+SOURCES := main.c fsm.c priority_queue.c door.c 
 
 SOURCE_DIR := source
-TEST_DIR := source/tests
 BUILD_DIR := build
 
 OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SOURCES))
-TEST_OBJ := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
+
+TESTS_ARCHIVE := $(BUILD_DIR)/libtests.a
+TESTS_SOURCE := unit_tests.c test_util.c door_tests.c fsm_tests.c priority_queue_tests.c
 
 DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 
@@ -20,30 +22,28 @@ CC := gcc
 CFLAGS := -O0 -g3 -Wall -Werror -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
 
 ifdef SIM
-LDFLAGS := -L$(BUILD_DIR) -ldriver 
+LDFLAGS := -L$(BUILD_DIR) -ldriver -ltests 
 else
-LDFLAGS := -L$(BUILD_DIR) -ldriver -lcomedi
+LDFLAGS := -L$(BUILD_DIR) -ldriver -ltests -lcomedi
 endif
-
-
 
 .DEFAULT_GOAL := elevator
 
-elevator : $(OBJ) | $(DRIVER_ARCHIVE)
+elevator : $(OBJ) | $(DRIVER_ARCHIVE) $(TESTS_ARCHIVE)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-test: $(TEST_OBJ) | $(DRIVER_ARCHIVE)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
 
 $(BUILD_DIR) :
 	mkdir -p $@/driver
-
-$(BUILD_DIR)/%.o : $(TEST_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p $@/tests
 
 $(BUILD_DIR)/%.o : $(SOURCE_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/tests/%.o : $(SOURCE_DIR)/tests/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TESTS_ARCHIVE) : $(TESTS_SOURCE:%.c=$(BUILD_DIR)/tests/%.o)
+	ar rcs $@ $^
 
 $(BUILD_DIR)/driver/%.o : $(SOURCE_DIR)/driver/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -53,4 +53,4 @@ $(DRIVER_ARCHIVE) : $(DRIVER_SOURCE:%.c=$(BUILD_DIR)/driver/%.o)
 
 .PHONY: clean
 clean :
-	rm -rf $(BUILD_DIR) elevator tests
+	rm -rf $(BUILD_DIR) elevator
