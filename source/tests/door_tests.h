@@ -12,8 +12,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../door.h"
-#include "../hardware.h"
+#include "door.h"
+#include "hardware.h"
 #include "test_util.h"
 
 /**

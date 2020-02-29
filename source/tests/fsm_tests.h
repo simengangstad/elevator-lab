@@ -8,7 +8,7 @@
 #define FSM_TESTS_H
 
 #include <stdbool.h>
-#include "../fsm.h"
+#include "fsm.h"
 #include "test_util.h"
 
 void fsm_tests_validate();
