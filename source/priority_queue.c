@@ -176,8 +176,6 @@ Order* priority_queue_pop(Order* p_priority_queue) {
 
     free(p_priority_queue);
     return p_updated_priority_queue;
-
-    return priority_queue_reorder(p_updated_priority_queue, current_position);
 }
 
 Order* priority_queue_clear(Order* p_priority_queue) {
