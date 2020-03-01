@@ -320,7 +320,7 @@ static int fsm_get_current_floor() {
 }
 
 static bool fsm_elevator_is_at_a_floor(const Position position) {
-    return position.offset == OFFSET_AT_FLOOR;
+    return position.floor != FLOOR_UNDEFINED && position.offset == OFFSET_AT_FLOOR;
 }
 
 static Position fsm_decide_elevator_position(const int last_floor, const HardwareMovement movement_when_left_floor) {
