@@ -29,7 +29,11 @@ static Order* priority_queue_get_last_order(Order* p_priority_queue) {
  * @return The updated priority queue.
  */
 static Order* priority_queue_remove_duplicate_orders(Order* p_priority_queue) {
-    bool order_on_floor[4] = {false, false, false, false};
+    bool order_on_floor[PRIORITY_QUEUE_NUMBER_OF_FLOORS];
+    for (unsigned int floor = 0; floor < sizeof(order_on_floor) / sizeof(order_on_floor[0]); floor++) {
+        order_on_floor[floor] = false;
+    }
+
     Order* p_iterator = p_priority_queue;
     Order* p_previous_order = NULL;
 

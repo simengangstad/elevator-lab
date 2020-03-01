@@ -13,6 +13,11 @@
 #include "hardware.h"
 
 /**
+ * @brief Specifies the number of floors we're taking account for in the priority queue.
+ */
+#define PRIORITY_QUEUE_NUMBER_OF_FLOORS HARDWARE_NUMBER_OF_FLOORS
+
+/**
  * @brief Structure to represent an order in the queue.
  */
 typedef struct Order {
