@@ -34,11 +34,11 @@ typedef enum {
 } State;
 
 /**
- * @brief Polls hardware, checks the current state and queue, and decides the next state based.
+ * @brief Polls hardware, checks the current state and queue, and decides the next state.
  *
- * @param[in] current_state Current state of the elevator
+ * @param[in] current_state Current state of the elevator.
  * @param[in] p_priority_queue The current queue, makes it possible for states to check if 
- * 						     the queue is in a given state in order to decide the next state. 
+ * 						       the queue is in a given state in order to decide the next state. 
  * @param[in] current_position The current position the elevator is at. 
  * 
  * @return Next state in the FSM based on @p current_state, @p priority_queue, @p current_position and hardware input.
@@ -84,17 +84,17 @@ static int fsm_get_current_floor();
 /**
  * @brief Checks if the elevator is at any floor based on the @p position. 
  * 
- * @param [in] position The position of the elevator.
+ * @param[in] position The position of the elevator.
  * 
  * @return true if the elevator is at any floor.
  */
 static bool fsm_elevator_is_at_a_floor(const Position position);
 
 /**
- * @brief Checks where the elevator is given the @p last_floor and @p movement_when_left_floor.
+ * @brief Decides the position of the elevator given the @p last_floor and @p movement_when_left_floor.
  * 
- * @param [in] last_floor The floor the elevator was last recorded to be at.
- * @param [in] movement_when_left_floor The movement when the elevator last left a floor. 
+ * @param[in] last_floor The floor the elevator was last recorded to be at.
+ * @param[in] movement_when_left_floor The movement when the elevator left @p last_floor. 
  * 
  * @return The position of the elevator.
  */
@@ -109,8 +109,8 @@ static void fsm_clear_order_lights();
  * @brief Polls the current orders and puts them in the @p pp_priority_queue. Updates the order light for the new 
  *        order(s).
  * 
- * @param [in, out] pp_priority_queue The current queue.
- * @param [in] current_position The position of the elevator, used in the queue algorithm to decide where the new 
+ * @param[in, out] pp_priority_queue The current queue.
+ * @param[in] current_position The position of the elevator, used in the queue algorithm to decide where the new 
  *             orders should be placed.
  */
 static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const Position current_position);
@@ -118,27 +118,27 @@ static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const 
 /**
  * @brief Checks if the top order in the @p p_priority_queue is at the @p floor.
  * 
- * @param [in] p_priority_queue The priority queue to check. 
- * @param [in] floor The floor to check the top order against. 
+ * @param[in] p_priority_queue The priority queue to check. 
+ * @param[in] floor The floor to check the top order against. 
  * 
  * @return true If the top order is at the @p floor. 
  */
-static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, const int floor);
+static bool fsm_top_order_is_at_floor(const Order* p_priority_queue, const int floor);
 
 /**
  * @brief Clears the top order of the @p pp_priority_queue and turns off the lights for the floor the top
  *        order is pointing to.
  * 
- * @param [in, out] pp_priority_queue The priority queue to clear the top order from. 
- * @param [in] position The current position of the elevator. 
+ * @param[in, out] pp_priority_queue The priority queue to clear the top order from. 
+ * @param[in] current_position The current position of the elevator. 
  * 
  */
-static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position position);
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position current_position);
 
 /**
  * @brief Handles signal interrupt from the command line.
  * 
- * @param sig The signal.
+ * @param[in] sig The signal.
  */
 static void fsm_sigint_handler(int sig);
 
@@ -351,7 +351,7 @@ void fsm_state_update(const State current_state, Order** pp_priority_queue, cons
         case STATE_DOOR_OPEN: {
             fsm_manage_orders_and_update_queue(pp_priority_queue, current_position);
 
-            if (fsm_top_order_is_at_current_floor(*pp_priority_queue, current_position.floor)) {
+            if (fsm_top_order_is_at_floor(*pp_priority_queue, current_position.floor)) {
                 fsm_clear_top_order_and_update_order_lights(pp_priority_queue, current_position);
                 door_request_open_and_autoclose();
             }
@@ -436,17 +436,17 @@ static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const 
     }
 }
 
-static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, const int floor) {
+static bool fsm_top_order_is_at_floor(const Order* p_priority_queue, const int floor) {
     return !priority_queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
 }
 
-static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position position) {
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position current_position) {
     for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
         hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
     }
 
     *pp_priority_queue = priority_queue_pop(*pp_priority_queue);
-    *pp_priority_queue = priority_queue_reorder_based_on_position(*pp_priority_queue, position);
+    *pp_priority_queue = priority_queue_reorder_based_on_position(*pp_priority_queue, current_position);
 }
 
 /**

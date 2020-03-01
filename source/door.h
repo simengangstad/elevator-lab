@@ -1,6 +1,7 @@
 /**
  * @file 
- * @brief Represents the actions with the door. It contains its own timer (thus tracks state). It also calls to hardware.
+ * @brief Represents the actions with the door. It contains its own timer (thus tracks state). 
+ *        It also calls to hardware.
  */
 
 #ifndef DOOR_H

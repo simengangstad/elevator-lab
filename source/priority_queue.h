@@ -64,6 +64,7 @@ Order* priority_queue_order_create(const int floor, const HardwareOrder directio
  * @param[in] current_position Current position of the elevator. Used to check where the new order should be placed.
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_order if @p p_new_order is NULL.
+ *         Returns @p p_new_order if @p p_first_order is NULL.
  */
 Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, const Position current_position);
 
@@ -72,7 +73,7 @@ Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, con
  *
  * @param[in] p_priority_queue Pointer to the priority queue.
  *
- * @return Pointer to the second order in the queue.
+ * @return Pointer to the second order in the queue. NULL if the queue only had one order.
  */
 Order* priority_queue_pop(Order* p_priority_queue);
 
@@ -80,8 +81,8 @@ Order* priority_queue_pop(Order* p_priority_queue);
  * @brief Checks if orders on the bottom of the queue are compatible with the top order by adding them into a new queue
  *        and thus running the sorting algorithm from #priority_queue_add_order on them.
  * 
- * @param [in] p_old_priority_queue The priority queue to reorder.
- * @param [in] current_position The current position.
+ * @param[in] p_old_priority_queue The priority queue to reorder.
+ * @param[in] current_position The current position, used to determine how we should reorder.
  * 
  * @return The reordered priority queue.
  */
@@ -106,7 +107,7 @@ Order* priority_queue_clear(Order* p_priority_queue);
 bool priority_queue_is_empty(const Order* p_priority_queue);
 
 /**
- * @brief Prints the queue to terminal, including the order floors and directions.
+ * @brief Prints the queue, including the order floors and directions.
  *
  * @param[in] p_priority_queue Pointer to priority queue.
  */

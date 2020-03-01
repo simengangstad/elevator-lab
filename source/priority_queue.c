@@ -11,7 +11,7 @@
 /**
  * @brief Get the last order in @p p_priority_queue. 
  * 
- * @param [in] p_priority_queue The queue to traverse.
+ * @param[in] p_priority_queue The queue to traverse.
  * 
  * @return The last order in the @p p_priority_queue. 
  */
@@ -27,7 +27,7 @@ static Order* priority_queue_get_last_order(Order* p_priority_queue) {
 /**
  * @brief Remove duplicate orders in the @p p_priority_queue. 
  * 
- * @param [in, out] p_priority_queue The queue to remove the duplicates from.
+ * @param[in, out] p_priority_queue The queue to remove the duplicates from.
  * 
  * @return The updated priority queue.
  */
@@ -58,9 +58,9 @@ static Order* priority_queue_remove_duplicate_orders(Order* p_priority_queue) {
 /**
  * @brief Checks if @p p_new_order is on the way to @p p_current_target based on the @p current_position of the elevator.
  * 
- * @param p_new_order The order to check. 
- * @param p_current_target The current target order to check against. 
- * @param current_position The current position of the elevator. 
+ * @param[in] p_new_order The order to check. 
+ * @param[in] p_current_target The current target order to check against. 
+ * @param[in] current_position The current position of the elevator. 
  * 
  * @return true if the @p p_new_order is on the way.
  */
