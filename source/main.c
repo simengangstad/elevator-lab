@@ -11,6 +11,7 @@
  * @brief Main entry point for the elevator. Unit tests can be executed by passing 
  *        the @c --unit-test flag to the binary.
  */
+#include <stdio.h>
 #include <string.h>
 
 #include "fsm.h"
@@ -25,7 +26,7 @@
  * @return Exit status. 
  */
 int main(const int argc, const char** argv) {
-    if (argc == 2 && strcmp(argv[1], "--unit-test")) {
+    if (argc == 2 && strcmp(argv[1], "-unit-test")) {
         unit_tests_check();
     } else {
         fsm_run();
