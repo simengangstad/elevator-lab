@@ -11,7 +11,6 @@
 #include <stdlib.h>
 
 #include "door_tests.h"
-#include "fsm_tests.h"
 #include "hardware.h"
 #include "priority_queue_tests.h"
 
@@ -37,6 +36,5 @@ void unit_tests_check() {
     signal(SIGINT, sigint_handler);
 
     door_tests_validate();
-    fsm_tests_validate();
     priority_queue_tests_validate();
 }
