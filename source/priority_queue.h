@@ -48,36 +48,36 @@ Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, con
 /**
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
  *
- * @param[in] p_first_order_of_queue Pointer to the first order in the queue.
+ * @param[in] p_priority_queue Pointer to the priority queue.
  * @param[in] current_floor Current floor of the elevator.
  *
  * @return Pointer to the second order in the queue.
  */
-Order* priority_queue_pop(Order* p_first_order_of_queue, const int current_floor);
+Order* priority_queue_pop(Order* p_priority_queue, const int current_floor);
 
 /**
  * @brief Removes every order in the queue.
  *
- * @param[in] p_first_order_of_queue Pointer to the first order in the queue.
+ * @param[in] p_priority_queue Pointer to the priority queue.
  * 
  * @return The new queue, will just return a null pointer.
  */
-Order* priority_queue_clear(Order* p_first_order_of_queue);
+Order* priority_queue_clear(Order* p_priority_queue);
 
 /**
  * @brief Returns true if the queue is empty.
  *
- * @param[in] p_first_order_of_queue Pointer to the first order in the queue.
+ * @param[in] p_priority_queue Pointer to the priority queue.
  *
  * @return True if the queue is empty.
  */
-bool priority_queue_is_empty(const Order* p_first_order_of_queue);
+bool priority_queue_is_empty(const Order* p_priority_queue);
 
 /**
  * @brief Prints the queue to terminal, including the order floors and directions.
  *
- * @param[in] p_first_order_of_queue Pointer to first order in queue.
+ * @param[in] p_prioriy_queue Pointer to priority queue.
  */
-void priority_queue_print(Order* p_first_order_of_queue);
+void priority_queue_print(Order* p_priority_queue);
 
 #endif
