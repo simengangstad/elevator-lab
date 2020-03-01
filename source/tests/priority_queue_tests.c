@@ -69,65 +69,65 @@ bool priority_queue_tests_check_get_function() {
  */
 void priority_queue_check_queue_creation_and_add() {
     {
-        const int current_floor = 0;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         printf("Tests adding-algoritm based on cases\n\n");
         printf("Case 1: new compatible order between current floor and goal\n");
-        printf("At floor %i", current_floor);
+        printf("At floor %i", current_position.floor);
         printf(" , new order going up from floor 3.\n");
         Order* first_order = priority_queue_order_create(2, HARDWARE_ORDER_UP);
         priority_queue_print(first_order);
         printf("New order from inside to second floor\n");
         Order* second_order = priority_queue_order_create(1, HARDWARE_ORDER_INSIDE);
-        first_order = priority_queue_add_order(second_order, first_order, current_floor, true);
+        first_order = priority_queue_add_order(second_order, first_order, current_position);
         priority_queue_print(first_order);
         printf("Test successful if new order is placed on top of existing order\n\n");
         priority_queue_clear(first_order);
     }
 
     {
-        const int current_floor = 0;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         printf("Case 2: new compatible order not between current floor and goal\n\n");
-        printf("At floor %i", current_floor);
+        printf("At floor %i", current_position.floor);
         printf(" , new order going up from floor 3.\n");
         Order* first_order = priority_queue_order_create(2, HARDWARE_ORDER_UP);
         priority_queue_print(first_order);
         printf("New order from inside to fourth floor\n");
         Order* second_order = priority_queue_order_create(3, HARDWARE_ORDER_INSIDE);
-        first_order = priority_queue_add_order(second_order, first_order, current_floor, true);
+        first_order = priority_queue_add_order(second_order, first_order, current_position);
         priority_queue_print(first_order);
         printf("Test successful if new order is placed below existing order\n\n");
         priority_queue_clear(first_order);
     }
 
     {
-        const int current_floor = 0;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         printf("Case 3: new incompatible order between current floor and goal\n\n");
-        printf("At floor %i", current_floor);
+        printf("At floor %i", current_position.floor);
         printf(" , new order going up from floor 3.\n");
         Order* first_order = priority_queue_order_create(2, HARDWARE_ORDER_UP);
         priority_queue_print(first_order);
         printf("New order going down from second floor\n");
         Order* second_order = priority_queue_order_create(1, HARDWARE_ORDER_DOWN);
-        first_order = priority_queue_add_order(second_order, first_order, current_floor, true);
+        first_order = priority_queue_add_order(second_order, first_order, current_position);
         priority_queue_print(first_order);
         printf("Test successful if new order is placed below existing order\n\n");
         priority_queue_clear(first_order);
     }
 
     {
-        const int current_floor = 0;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         printf("Case 4: deletion of duplicate orders of lower priority\n\n");
-        printf("At floor %i", current_floor);
+        printf("At floor %i", current_position.floor);
         printf(" , new order going up from floor 3.\n");
         Order* first_order = priority_queue_order_create(2, HARDWARE_ORDER_UP);
         priority_queue_print(first_order);
         printf("New order going down from second floor\n");
         Order* second_order = priority_queue_order_create(1, HARDWARE_ORDER_DOWN);
-        first_order = priority_queue_add_order(second_order, first_order, current_floor, true);
+        first_order = priority_queue_add_order(second_order, first_order, current_position);
         priority_queue_print(first_order);
         printf("New order going up from second floor\n");
         Order* third_order = priority_queue_order_create(1, HARDWARE_ORDER_UP);
-        first_order = priority_queue_add_order(third_order, first_order, current_floor, true);
+        first_order = priority_queue_add_order(third_order, first_order, current_position);
         priority_queue_print(first_order);
         printf("Test successful if duplicate order is deleted correctly\n\n");
         priority_queue_clear(first_order);
@@ -143,14 +143,15 @@ void priority_queue_tests_check_queue_help_functions() {
     printf("Help functions\n");
 
     {
-        const int current_floor = 0;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         Order* first_order = priority_queue_order_create(2, HARDWARE_ORDER_UP);
-        first_order = priority_queue_add_order(priority_queue_order_create(1, HARDWARE_ORDER_INSIDE), first_order, current_floor, true);
-        first_order = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_DOWN), first_order, current_floor, true);
+        first_order = priority_queue_add_order(priority_queue_order_create(1, HARDWARE_ORDER_INSIDE), first_order, current_position);
+        first_order = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_DOWN), first_order, current_position);
         printf("Current queue:\n");
         priority_queue_print(first_order);
         printf("Pop first order\n");
-        first_order = priority_queue_pop(first_order, current_floor);
+        first_order = priority_queue_pop(first_order);
+        first_order = priority_queue_reorder_based_on_position(first_order, current_position);
         printf("Current queue:\n");
         priority_queue_print(first_order);
         printf("Test successful if first order is removed and remaining orders are unchanged\n\n");
@@ -158,15 +159,16 @@ void priority_queue_tests_check_queue_help_functions() {
     }
 
     {
-        const int current_floor = 1;
+        const Position current_position = {0, OFFSET_AT_FLOOR};
         Order* first_order = priority_queue_order_create(1, HARDWARE_ORDER_UP);
-        first_order = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_UP), first_order, current_floor, true);
-        first_order = priority_queue_add_order(priority_queue_order_create(2, HARDWARE_ORDER_INSIDE), first_order, current_floor, true);
+        first_order = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_UP), first_order, current_position);
+        first_order = priority_queue_add_order(priority_queue_order_create(2, HARDWARE_ORDER_INSIDE), first_order, current_position);
         printf("Current queue:\n");
         priority_queue_print(first_order);
 
         printf("Pop first order\n");
-        first_order = priority_queue_pop(first_order, current_floor);
+        first_order = priority_queue_pop(first_order);
+        first_order = priority_queue_reorder_based_on_position(first_order, current_position);
         printf("Current queue:\n");
         priority_queue_print(first_order);
         printf("Test successful if first order is removed and remaining orders are shuffled\n\n");
