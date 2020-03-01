@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include "hardware.h"
+#include "position.h"
 
 /**
  * @brief Specifies the number of floors we're taking account for in the priority queue.
@@ -33,6 +34,14 @@ typedef struct Order {
      * @brief The direction for this order.
      */
     HardwareOrder direction;
+
+    /**
+     * @brief If the order is the oldest one that got added to the priority queue, the order needs to
+     *        keep track of this as the priority queue gets reordered with orders which are "on way" to
+     *        the oldest order. 
+     */
+    bool is_oldest_order;
+
 } Order;
 
 /**
@@ -52,22 +61,21 @@ Order* priority_queue_order_create(const int floor, const HardwareOrder directio
  *
  * @param[in] p_new_order Pointer to the order to add to the queue.
  * @param[in] p_priority_queue Pointer existing priority queu.
- * @param[in] current_floor Current floor.
- * @param[in] is_at_a_floor Whether the elevator is currently at a floor, not between floors.
+ * @param[in] current_position Current position of the elevator.
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_order if @p p_new_order is NULL.
  */
-Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, const int current_floor, const bool is_at_a_floor);
+Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, const Position current_position);
 
 /**
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
  *
  * @param[in] p_priority_queue Pointer to the priority queue.
- * @param[in] current_floor Current floor of the elevator.
+ * @param[in] current_position Current position of the elevator.
  *
  * @return Pointer to the second order in the queue.
  */
-Order* priority_queue_pop(Order* p_priority_queue, const int current_floor);
+Order* priority_queue_pop(Order* p_priority_queue, const Position current_position);
 
 /**
  * @brief Removes every order in the queue.

@@ -56,23 +56,57 @@ static Order* priority_queue_remove_duplicate_orders(Order* p_priority_queue) {
 }
 
 /**
+ * @brief Checks if @p p_new_order is on the way to @p p_current_target based on the @p current_position of the elevator.
+ * 
+ * @param p_new_order The order to check. 
+ * @param p_current_target The current target order to check against. 
+ * @param current_position The current position of the elevator. 
+ * 
+ * @return true if the @p p_new_order is on the way.
+ */
+static bool priority_queue_order_is_on_way(const Order* p_new_order, const Order* p_current_target, const Position current_position) {
+    bool new_order_is_on_the_way = false;
+
+    // In the case where the elevator is going up
+    const bool new_order_is_below_target_and_has_correct_direction = (p_new_order->floor < p_current_target->floor &&
+                                                                      p_new_order->direction != HARDWARE_ORDER_DOWN);
+    if (new_order_is_below_target_and_has_correct_direction) {
+        new_order_is_on_the_way = (current_position.floor < p_new_order->floor) ||
+                                  (current_position.floor == p_new_order->floor && current_position.offset != OFFSET_ABOVE);
+    }
+
+    // In the case where the elevator is going down
+    bool new_order_is_above_target_and_has_correct_direction = (p_new_order->floor > p_current_target->floor &&
+                                                                p_new_order->direction != HARDWARE_ORDER_UP);
+    if (new_order_is_above_target_and_has_correct_direction) {
+        new_order_is_on_the_way = (p_new_order->floor < current_position.floor) ||
+                                  (current_position.floor == p_new_order->floor && current_position.offset != OFFSET_BELOW);
+    }
+
+    return new_order_is_on_the_way;
+}
+
+/**
  * @brief Checks if orders on the bottom of the queue are compatible with the top order by adding them into a new queue
  *        and thus running the sorting algorithm from #priority_queue_add_order on them.
  * 
  * @param [in] p_old_priority_queue The priority queue to reorder.
- * @param [in] current_floor The current floor.
+ * @param [in] current_position The current position.
  * 
  * @return The reordered priority queue.
  */
-static Order* priority_queue_reorder(Order* p_old_priority_queue, const int current_floor) {
+static Order* priority_queue_reorder(Order* p_old_priority_queue, const Position current_position) {
+    if (!p_old_priority_queue) {
+        return NULL;
+    }
+
     Order* p_updated_priority_queue = priority_queue_order_create(p_old_priority_queue->floor, p_old_priority_queue->direction);
     Order* p_iterator = p_old_priority_queue->next_order;
 
     while (p_iterator) {
         p_updated_priority_queue = priority_queue_add_order(priority_queue_order_create(p_iterator->floor, p_iterator->direction),
                                                             p_updated_priority_queue,
-                                                            current_floor,
-                                                            true);
+                                                            current_position);
         p_iterator = p_iterator->next_order;
     }
 
@@ -87,40 +121,53 @@ Order* priority_queue_order_create(const int floor, const HardwareOrder directio
     p_new_order->floor = floor;
     p_new_order->direction = direction;
     p_new_order->next_order = NULL;
+    p_new_order->is_oldest_order = false;
 
     return p_new_order;
 }
 
-Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, const int current_floor, const bool is_at_a_floor) {
+Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, const Position current_position) {
     if (!p_new_order) {
         return p_priority_queue;
     }
 
     if (priority_queue_is_empty(p_priority_queue)) {
+        p_new_order->is_oldest_order = true;
         return p_new_order;
     } else {
-        Order* p_updated_priority_queue = NULL;
+        Order* p_iterator = p_priority_queue;
+        Order* p_previous_iterator = NULL;
+        bool new_order_got_added = false;
 
-        const bool new_order_is_on_way = (current_floor < p_new_order->floor && p_new_order->floor < p_priority_queue->floor && p_new_order->direction != HARDWARE_ORDER_DOWN) ||
-                                         (current_floor > p_new_order->floor && p_new_order->floor > p_priority_queue->floor && p_new_order->direction != HARDWARE_ORDER_UP) ||
-                                         (is_at_a_floor && (p_new_order->floor == current_floor));
+        // Traverse to the oldest order and check if the new order is on way to that order
+        do {
+            if (priority_queue_order_is_on_way(p_new_order, p_iterator, current_position)) {
+                if (!p_previous_iterator) {
+                    p_new_order->next_order = p_priority_queue;
+                    p_priority_queue = p_new_order;
+                } else {
+                    p_previous_iterator->next_order = p_new_order;
+                    p_new_order->next_order = p_iterator;
+                }
+                new_order_got_added = true;
+                break;
+            }
 
-        // If the new order is on the way to the destination, put it at the top of the queue
-        if (new_order_is_on_way) {
-            p_new_order->next_order = p_priority_queue;
-            p_updated_priority_queue = p_new_order;
+            p_previous_iterator = p_iterator;
+            p_iterator = p_iterator->next_order;
+
+        } while (p_iterator && !(p_previous_iterator->is_oldest_order));
+
+        // If the new order wasn't on the way to the oldest order, we add it to the bottom of the queue
+        if (!new_order_got_added) {
+            priority_queue_get_last_order(p_priority_queue)->next_order = p_new_order;
         }
-        // If the new order is *not* on the way to the destination, put it at the bottom of the queue
-        else {
-            p_updated_priority_queue = p_priority_queue;
-            priority_queue_get_last_order(p_updated_priority_queue)->next_order = p_new_order;
-        }
 
-        return priority_queue_remove_duplicate_orders(p_updated_priority_queue);
+        return priority_queue_remove_duplicate_orders(p_priority_queue);
     }
 }
 
-Order* priority_queue_pop(Order* p_priority_queue, const int current_floor) {
+Order* priority_queue_pop(Order* p_priority_queue, const Position current_position) {
     if (!p_priority_queue) {
         return NULL;
     }
@@ -131,9 +178,14 @@ Order* priority_queue_pop(Order* p_priority_queue, const int current_floor) {
     }
 
     Order* p_updated_priority_queue = p_priority_queue->next_order;
+
+    if (p_priority_queue->is_oldest_order) {
+        p_updated_priority_queue->is_oldest_order = true;
+    }
+
     free(p_priority_queue);
 
-    return priority_queue_reorder(p_updated_priority_queue, current_floor);
+    return priority_queue_reorder(p_updated_priority_queue, current_position);
 }
 
 Order* priority_queue_clear(Order* p_priority_queue) {
