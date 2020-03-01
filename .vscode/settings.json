@@ -4,9 +4,8 @@
     "*.world": "xml",
     "*.config": "xml",
     "*.sdf": "xml",
-    "door_tests.h": "c",
-    "test_util.h": "c"
   },
   "editor.formatOnSave": true,
-  "editor.formatOnPaste": true
+  "editor.formatOnPaste": true,
+  "editor.overviewRulerBorder": false
 }
