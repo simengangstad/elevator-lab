@@ -159,23 +159,6 @@ void priority_queue_tests_check_queue_help_functions() {
     }
 
     {
-        const Position current_position = {0, OFFSET_AT_FLOOR};
-        Order* first_order = priority_queue_order_create(1, HARDWARE_ORDER_UP);
-        first_order = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_UP), first_order, current_position);
-        first_order = priority_queue_add_order(priority_queue_order_create(2, HARDWARE_ORDER_INSIDE), first_order, current_position);
-        printf("Current queue:\n");
-        priority_queue_print(first_order);
-
-        printf("Pop first order\n");
-        first_order = priority_queue_pop(first_order);
-        first_order = priority_queue_reorder_based_on_position(first_order, current_position);
-        printf("Current queue:\n");
-        priority_queue_print(first_order);
-        printf("Test successful if first order is removed and remaining orders are shuffled\n\n");
-        priority_queue_clear(first_order);
-    }
-
-    {
         Order* first_order = NULL;
         printf("Test successful if expression returns true: %i\n\n", priority_queue_is_empty(first_order));
     }
