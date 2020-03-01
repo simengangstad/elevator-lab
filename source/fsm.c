@@ -19,8 +19,6 @@
  */
 static int fsm_get_current_floor();
 
-// TODO: Hva synes vi om denne? Øker jo til en grad lesbarhet, men kan jo også bare sjekke position.offset == OFFSET_AT_FLOOR
-
 /**
  * @brief Checks if the elevator is at any floor based on the @p position. 
  * 
@@ -46,11 +44,12 @@ static Position fsm_decide_elevator_position(const int last_floor, const Hardwar
 static void fsm_clear_order_lights();
 
 /**
- * @brief Polls the current orders and puts them in the @p pp_priority_queue. Updates the order light for the new order(s).
+ * @brief Polls the current orders and puts them in the @p pp_priority_queue. Updates the order light for the new 
+ *        order(s).
  * 
  * @param [in, out] pp_priority_queue The current queue.
- * @param [in] current_position The position of the elevator, used in the queue algorithm to decide where the new orders
- *                              should be placed.
+ * @param [in] current_position The position of the elevator, used in the queue algorithm to decide where the new 
+ *             orders should be placed.
  */
 static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const Position current_position);
 
@@ -127,10 +126,10 @@ void fsm_run() {
 
         fsm_state_update(current_state, &p_priority_queue, current_position);
         door_update();
+        priority_queue_print(p_priority_queue);
     }
 
     printf("Terminating elevator\n");
-    priority_queue_clear(p_priority_queue);
     free(p_movement_when_left_floor);
     hardware_command_movement(HARDWARE_MOVEMENT_STOP);
 }
@@ -142,7 +141,6 @@ State fsm_decide_next_state(const State current_state, const Order* p_priority_q
         case STATE_UNDEFINED:
             next_state = STATE_STARTUP;
             break;
-
         case STATE_STARTUP: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
@@ -227,7 +225,6 @@ void fsm_transition(const State current_state,
     // Perform enter for next state
     switch (next_state) {
         case STATE_STARTUP: {
-            // TODO: Is this necessary?
             fsm_clear_order_lights();
 
             if (!fsm_elevator_is_at_a_floor(current_position)) {
