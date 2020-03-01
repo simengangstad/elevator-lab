@@ -123,7 +123,7 @@ void fsm_run() {
     }
 
     printf("Terminating elevator\n");
-    queue_clear(p_priority_queue);
+    priority_queue_clear(p_priority_queue);
     free(p_movement_when_left_floor);
     hardware_command_movement(HARDWARE_MOVEMENT_STOP);
 }
@@ -147,7 +147,7 @@ State fsm_decide_next_state(const State current_state, const Order* p_priority_q
         case STATE_IDLE: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (!queue_is_empty(p_priority_queue)) {
+            } else if (!priority_queue_is_empty(p_priority_queue)) {
                 next_state = STATE_MOVE;
             }
         } break;
@@ -163,9 +163,9 @@ State fsm_decide_next_state(const State current_state, const Order* p_priority_q
         case STATE_DOOR_OPEN: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (!door_is_open() && queue_is_empty(p_priority_queue)) {
+            } else if (!door_is_open() && priority_queue_is_empty(p_priority_queue)) {
                 next_state = STATE_IDLE;
-            } else if (!door_is_open() && !queue_is_empty(p_priority_queue)) {
+            } else if (!door_is_open() && !priority_queue_is_empty(p_priority_queue)) {
                 next_state = STATE_MOVE;
             }
         } break;
@@ -259,7 +259,7 @@ void fsm_transition(const State current_state,
             hardware_command_movement(HARDWARE_MOVEMENT_STOP);
             hardware_command_stop_light(true);
             fsm_clear_order_lights();
-            *pp_priority_queue = queue_clear(*pp_priority_queue);
+            *pp_priority_queue = priority_queue_clear(*pp_priority_queue);
         } break;
 
         default:
@@ -360,7 +360,10 @@ static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const 
     for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
         for (HardwareOrder order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
             if (hardware_read_order(floor, order_type)) {
-                *pp_priority_queue = queue_add_order(order_create(floor, order_type), *pp_priority_queue, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
+                *pp_priority_queue = priority_queue_add_order(priority_queue_order_create(floor, order_type),
+                                                              *pp_priority_queue,
+                                                              current_position.floor,
+                                                              current_position.offset == OFFSET_AT_FLOOR);
                 hardware_command_order_light(floor, order_type, true);
             }
         }
@@ -368,7 +371,7 @@ static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const 
 }
 
 static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, const int floor) {
-    return !queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
+    return !priority_queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
 }
 
 static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue) {
@@ -376,7 +379,7 @@ static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queu
         hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
     }
 
-    *pp_priority_queue = queue_pop(*pp_priority_queue, (*pp_priority_queue)->floor);
+    *pp_priority_queue = priority_queue_pop(*pp_priority_queue, (*pp_priority_queue)->floor);
 }
 
 /**

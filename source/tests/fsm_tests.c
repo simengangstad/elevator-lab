@@ -62,13 +62,13 @@ static bool fsm_tests_check_transtion_requirements() {
             }
         }
 
-        Order* priority_queue = queue_add_order(order_create(3, HARDWARE_ORDER_DOWN), NULL, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
+        Order* priority_queue = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_DOWN), NULL, current_position.floor, current_position.offset == OFFSET_AT_FLOOR);
 
         state = fsm_decide_next_state(state, priority_queue, current_position);
 
         if (state != STATE_MOVE) {
             fprintf(stderr, "Did not transition to Move from Idle. The requirements where not met\n");
-            queue_clear(priority_queue);
+            priority_queue_clear(priority_queue);
             return false;
         }
 
@@ -85,7 +85,10 @@ static bool fsm_tests_check_transtion_requirements() {
 
         for (unsigned int floor = 0; floor < HARDWARE_NUMBER_OF_FLOORS; floor++) {
             if (hardware_read_floor_sensor(floor)) {
-                priority_queue = queue_add_order(order_create(3, HARDWARE_ORDER_DOWN), priority_queue, floor, current_position.offset == OFFSET_AT_FLOOR);
+                priority_queue = priority_queue_add_order(priority_queue_order_create(3, HARDWARE_ORDER_DOWN),
+                                                          priority_queue,
+                                                          floor,
+                                                          current_position.offset == OFFSET_AT_FLOOR);
                 current_position.floor = floor;
                 break;
             }
@@ -113,7 +116,7 @@ static bool fsm_tests_check_transtion_requirements() {
             }
         }
 
-        queue_clear(priority_queue);
+        priority_queue_clear(priority_queue);
         if (state != STATE_DOOR_OPEN) {
             fprintf(stderr, "Did not transition to door open from move. The requirements where not met\n");
             return false;
@@ -127,12 +130,12 @@ static bool fsm_tests_check_transtion_requirements() {
         // door is closed and that the  queue is not empty
         printf("Testing transition from door open to move.\n");
         State state = STATE_DOOR_OPEN;
-        Order* priority_queue = queue_add_order(order_create(0, HARDWARE_ORDER_DOWN), NULL, 1, true);
+        Order* priority_queue = priority_queue_add_order(priority_queue_order_create(0, HARDWARE_ORDER_DOWN), NULL, 1, true);
         hardware_command_door_open(0);
 
         state = fsm_decide_next_state(state, priority_queue, (Position){3, OFFSET_AT_FLOOR});
 
-        queue_clear(priority_queue);
+        priority_queue_clear(priority_queue);
         if (state != STATE_MOVE) {
             fprintf(stderr, "Did not transition to move from door open. The requirements where not met\n");
             return false;
