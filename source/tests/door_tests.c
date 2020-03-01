@@ -5,6 +5,15 @@
 
 #include "door_tests.h"
 
+#include <assert.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "door.h"
+#include "hardware.h"
+#include "test_util.h"
+
 /**
  * @brief Will check if the door does not close when there is an obstruction. 
  *

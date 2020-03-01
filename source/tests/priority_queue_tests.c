@@ -1,4 +1,16 @@
+/**
+ * @file 
+ * 
+ * @brief Implementation of the priority queue tests module.
+ */
+
 #include "priority_queue_tests.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "priority_queue.h"
 
 /**
  * @brief Checks that order creation is set up correctly. 

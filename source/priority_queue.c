@@ -5,6 +5,9 @@
 
 #include "priority_queue.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /**
  * @brief Get the last order in @p p_priority_queue. 
  * 
@@ -54,7 +57,7 @@ static Order* priority_queue_remove_duplicate_orders(Order* p_priority_queue) {
 
 /**
  * @brief Checks if orders on the bottom of the queue are compatible with the top order by adding them into a new queue
- *        and thus running the sorting algorithm from #priority_queue_order_create on them.
+ *        and thus running the sorting algorithm from #priority_queue_add_order on them.
  * 
  * @param [in] p_old_priority_queue The priority queue to reorder.
  * @param [in] current_floor The current floor.

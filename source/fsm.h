@@ -12,12 +12,6 @@
  */
 #define FLOOR_UNDEFINED -1
 
-#include <signal.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "door.h"
 #include "hardware.h"
 #include "priority_queue.h"
 

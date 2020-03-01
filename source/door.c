@@ -5,6 +5,9 @@
 
 #include "door.h"
 
+#include <time.h>
+#include "hardware.h"
+
 /**
  * @brief Keeps track of the time since we last requested the door to open and autoclose.
  * 

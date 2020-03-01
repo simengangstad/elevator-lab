@@ -5,6 +5,13 @@
 
 #include "fsm.h"
 
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "door.h"
+
 /**
  * @brief Gets the floor the elevator is currently at.
  * 
@@ -71,12 +78,12 @@ static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queu
  * 
  * @param sig The signal.
  */
-static void sigint_handler(int sig);
+static void fsm_sigint_handler(int sig);
 
 /**
  * @brief Determines if the FSM should continue running.
  */
-static bool m_should_abort = false;
+static bool m_fsm_should_abort = false;
 
 /**
  * #################################################################################################################
@@ -91,7 +98,7 @@ void fsm_run() {
         exit(1);
     }
 
-    signal(SIGINT, sigint_handler);
+    signal(SIGINT, fsm_sigint_handler);
 
     State current_state = STATE_UNDEFINED;
 
@@ -103,7 +110,7 @@ void fsm_run() {
     HardwareMovement* p_movement_when_left_floor = malloc(sizeof(HardwareMovement));
     *p_movement_when_left_floor = HARDWARE_MOVEMENT_STOP;
 
-    while (!m_should_abort) {
+    while (!m_fsm_should_abort) {
         current_position = fsm_decide_elevator_position(last_floor, *p_movement_when_left_floor);
 
         if (fsm_elevator_is_at_a_floor(current_position)) {
@@ -155,7 +162,7 @@ State fsm_decide_next_state(const State current_state, const Order* p_priority_q
         case STATE_MOVE: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (p_priority_queue->floor == fsm_get_current_floor()) {
+            } else if (p_priority_queue->floor == current_position.floor) {
                 next_state = STATE_DOOR_OPEN;
             }
         } break;
@@ -329,7 +336,7 @@ static Position fsm_decide_elevator_position(const int last_floor, const Hardwar
 
     const int current_floor = fsm_get_current_floor();
     if (current_floor != FLOOR_UNDEFINED) {
-        new_floor = fsm_get_current_floor();
+        new_floor = current_floor;
         offset = OFFSET_AT_FLOOR;
     }
 
@@ -388,7 +395,7 @@ static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queu
  * #################################################################################################################
  */
 
-static void sigint_handler(int sig) {
+static void fsm_sigint_handler(int sig) {
     (void)(sig);
-    m_should_abort = true;
+    m_fsm_should_abort = true;
 }

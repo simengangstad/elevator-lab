@@ -7,10 +7,9 @@
 #ifndef FSM_TESTS_H
 #define FSM_TESTS_H
 
-#include <stdbool.h>
-#include "fsm.h"
-#include "test_util.h"
-
+/**
+ * @brief Validates the unit tests for the FSM.
+ */
 void fsm_tests_validate();
 
 #endif

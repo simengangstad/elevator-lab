@@ -6,6 +6,14 @@
 
 #include "fsm_tests.h"
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "fsm.h"
+#include "test_util.h"
+
 /**
  * @brief Will check that the FSM doesn't make a transition before the requirements for the 
  *        given transition is met.

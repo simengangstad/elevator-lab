@@ -6,6 +6,15 @@
 
 #include "unit_tests.h"
 
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "door_tests.h"
+#include "fsm_tests.h"
+#include "hardware.h"
+#include "priority_queue_tests.h"
+
 /**
  * @brief Handles interrupts from the command line.
  * 

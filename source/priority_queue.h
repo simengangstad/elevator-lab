@@ -6,10 +6,8 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
-#include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+
 #include "hardware.h"
 
 /**
@@ -18,11 +16,22 @@
 #define PRIORITY_QUEUE_NUMBER_OF_FLOORS HARDWARE_NUMBER_OF_FLOORS
 
 /**
- * @brief Structure to represent an order in the queue.
+ * @brief Structure to represent an order in the queue, a node in a linked list.
  */
 typedef struct Order {
+    /**
+     * @brief The next order in the linked list. 
+     */
     struct Order* next_order;
+
+    /**
+     * @brief The floor for this order.
+     */
     int floor;
+
+    /**
+     * @brief The direction for this order.
+     */
     HardwareOrder direction;
 } Order;
 
@@ -81,7 +90,7 @@ bool priority_queue_is_empty(const Order* p_priority_queue);
 /**
  * @brief Prints the queue to terminal, including the order floors and directions.
  *
- * @param[in] p_prioriy_queue Pointer to priority queue.
+ * @param[in] p_priority_queue Pointer to priority queue.
  */
 void priority_queue_print(Order* p_priority_queue);
 
