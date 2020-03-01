@@ -61,7 +61,7 @@ Order* priority_queue_order_create(const int floor, const HardwareOrder directio
  *
  * @param[in] p_new_order Pointer to the order to add to the queue.
  * @param[in] p_priority_queue Pointer existing priority queu.
- * @param[in] current_position Current position of the elevator.
+ * @param[in] current_position Current position of the elevator. Used to check where the new order should be placed.
  *
  * @return Returns a pointer to the start of the queue. Returns @p p_first_order if @p p_new_order is NULL.
  */
@@ -71,11 +71,21 @@ Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, con
  * @brief Deletes the first order in the queue, returns a pointer to the second order in the queue.
  *
  * @param[in] p_priority_queue Pointer to the priority queue.
- * @param[in] current_position Current position of the elevator.
  *
  * @return Pointer to the second order in the queue.
  */
-Order* priority_queue_pop(Order* p_priority_queue, const Position current_position);
+Order* priority_queue_pop(Order* p_priority_queue);
+
+/**
+ * @brief Checks if orders on the bottom of the queue are compatible with the top order by adding them into a new queue
+ *        and thus running the sorting algorithm from #priority_queue_add_order on them.
+ * 
+ * @param [in] p_old_priority_queue The priority queue to reorder.
+ * @param [in] current_position The current position.
+ * 
+ * @return The reordered priority queue.
+ */
+Order* priority_queue_reorder_based_on_position(Order* p_old_priority_queue, const Position current_position);
 
 /**
  * @brief Removes every order in the queue.

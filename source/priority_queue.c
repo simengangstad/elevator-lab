@@ -86,16 +86,7 @@ static bool priority_queue_order_is_on_way(const Order* p_new_order, const Order
     return new_order_is_on_the_way;
 }
 
-/**
- * @brief Checks if orders on the bottom of the queue are compatible with the top order by adding them into a new queue
- *        and thus running the sorting algorithm from #priority_queue_add_order on them.
- * 
- * @param [in] p_old_priority_queue The priority queue to reorder.
- * @param [in] current_position The current position.
- * 
- * @return The reordered priority queue.
- */
-static Order* priority_queue_reorder(Order* p_old_priority_queue, const Position current_position) {
+Order* priority_queue_reorder_based_on_position(Order* p_old_priority_queue, const Position current_position) {
     if (!p_old_priority_queue) {
         return NULL;
     }
@@ -167,7 +158,7 @@ Order* priority_queue_add_order(Order* p_new_order, Order* p_priority_queue, con
     }
 }
 
-Order* priority_queue_pop(Order* p_priority_queue, const Position current_position) {
+Order* priority_queue_pop(Order* p_priority_queue) {
     if (!p_priority_queue) {
         return NULL;
     }
@@ -184,6 +175,7 @@ Order* priority_queue_pop(Order* p_priority_queue, const Position current_positi
     }
 
     free(p_priority_queue);
+    return p_updated_priority_queue;
 
     return priority_queue_reorder(p_updated_priority_queue, current_position);
 }

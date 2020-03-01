@@ -68,9 +68,10 @@ static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, con
  *        order is pointing to.
  * 
  * @param [in, out] pp_priority_queue The priority queue to clear the top order from. 
+ * @param [in] position The current position of the elevator. 
  * 
  */
-static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue);
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position position);
 
 /**
  * @brief Handles signal interrupt from the command line.
@@ -289,7 +290,7 @@ void fsm_state_update(const State current_state, Order** pp_priority_queue, cons
             fsm_manage_orders_and_update_queue(pp_priority_queue, current_position);
 
             if (fsm_top_order_is_at_current_floor(*pp_priority_queue, current_position.floor)) {
-                fsm_clear_top_order_and_update_order_lights(pp_priority_queue);
+                fsm_clear_top_order_and_update_order_lights(pp_priority_queue, current_position);
                 door_request_open_and_autoclose();
             }
 
@@ -366,8 +367,7 @@ static void fsm_manage_orders_and_update_queue(Order** pp_priority_queue, const 
             if (hardware_read_order(floor, order_type)) {
                 *pp_priority_queue = priority_queue_add_order(priority_queue_order_create(floor, order_type),
                                                               *pp_priority_queue,
-                                                              current_position.floor,
-                                                              current_position.offset == OFFSET_AT_FLOOR);
+                                                              current_position);
                 hardware_command_order_light(floor, order_type, true);
             }
         }
@@ -378,12 +378,13 @@ static bool fsm_top_order_is_at_current_floor(const Order* p_priority_queue, con
     return !priority_queue_is_empty(p_priority_queue) && p_priority_queue->floor == floor;
 }
 
-static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue) {
+static void fsm_clear_top_order_and_update_order_lights(Order** pp_priority_queue, const Position position) {
     for (unsigned int order_type = HARDWARE_ORDER_UP; order_type <= HARDWARE_ORDER_DOWN; order_type++) {
         hardware_command_order_light((*pp_priority_queue)->floor, order_type, false);
     }
 
-    *pp_priority_queue = priority_queue_pop(*pp_priority_queue, (*pp_priority_queue)->floor);
+    *pp_priority_queue = priority_queue_pop(*pp_priority_queue);
+    *pp_priority_queue = priority_queue_reorder_based_on_position(*pp_priority_queue, position);
 }
 
 /**
