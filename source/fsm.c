@@ -160,7 +160,7 @@ State fsm_decide_next_state(const State current_state, const Order* p_priority_q
         case STATE_MOVE: {
             if (hardware_read_stop_signal()) {
                 next_state = STATE_STOP;
-            } else if (p_priority_queue->floor == current_position.floor) {
+            } else if (p_priority_queue->floor == current_position.floor && current_position.offset == OFFSET_AT_FLOOR) {
                 next_state = STATE_DOOR_OPEN;
             }
         } break;
