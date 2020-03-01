@@ -189,7 +189,6 @@ void fsm_run() {
 
         fsm_state_update(current_state, &p_priority_queue, current_position);
         door_update();
-        priority_queue_print(p_priority_queue);
     }
 
     printf("Terminating elevator\n");
