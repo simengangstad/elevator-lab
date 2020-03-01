@@ -1,5 +1,3 @@
-SIM := true
-
 SOURCES := main.c fsm.c priority_queue.c door.c 
 
 SOURCE_DIR := source
@@ -12,20 +10,12 @@ TESTS_SOURCE := unit_tests.c test_util.c door_tests.c fsm_tests.c priority_queue
 
 DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 
-ifdef SIM
-DRIVER_SOURCE := hardware_sim.c
-else
 DRIVER_SOURCE := hardware.c io.c
-endif
 
 CC := gcc
 CFLAGS := -O0 -g3 -Wall -Werror -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
 
-ifdef SIM
-LDFLAGS := -L$(BUILD_DIR) -ldriver -ltests 
-else
 LDFLAGS := -L$(BUILD_DIR) -ldriver -ltests -lcomedi
-endif
 
 .DEFAULT_GOAL := elevator
 
