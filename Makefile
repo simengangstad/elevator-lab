@@ -13,7 +13,7 @@ DRIVER_ARCHIVE := $(BUILD_DIR)/libdriver.a
 DRIVER_SOURCE := hardware.c io.c
 
 CC := gcc
-CFLAGS := -O0 -g3 -Wall -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
+CFLAGS := -O0 -g3 -Wall -Werror -D_GNU_SOURCE -std=c11 -I$(SOURCE_DIR)
 
 LDFLAGS := -L$(BUILD_DIR) -ldriver -ltests -lcomedi
 
