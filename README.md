@@ -1,1 +1,1 @@
-# Heisprosjektet i TTK4235
+# Elevator lab in TTK4235
